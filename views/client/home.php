@@ -154,10 +154,11 @@ $featuredTitle = 'Laptop nổi bật';
                         ['src' => 'assets/img/icons/icon-homepage-trade-in.svg', 'parts' => [['text'=>'Thu cũ đổi mới', 'href'=>'#']]],
                         ['src' => 'assets/img/icons/icon-homepage-used-goods.svg', 'parts' => [['text'=>'Hàng cũ', 'href'=>'#']]],
                         ['src' => 'assets/img/icons/icon-homepage-promotions.svg', 'parts' => [['text'=>'Khuyến mãi', 'href'=>'#']]],
-                        ['src' => 'assets/img/icons/icon-homepage-tech-news.svg', 'parts' => [['text'=>'Tin công nghệ', 'href'=>'#']]]
+                        ['src' => 'assets/img/icons/icon-homepage-tech-news.svg', 'parts' => [['text'=>'Tin công nghệ', 'href'=>'#']]],
+                        ['src' => 'assets/img/qna.svg', 'parts' => [['text'=>'Hỏi đáp', 'href'=>'http://localhost//LAPTOP_WEB_DEV-main/index.php?page=qna']]]
                     ];
                     foreach ($leftCats as $c): ?>
-                    <div class="group cursor-pointer px-3 hover:bg-neutral-100 d-flex align-items-center category-item" style="height: 34px;" onclick="window.location.href='index.php?page=shop'">
+                    <div class="group flex h-10 cursor-pointer items-center px-3 hover:bg-neutral-100 d-flex align-items-center category-item" onclick="if(event.target.tagName !== 'A') window.location.href='index.php?page=shop'">
                         <img alt="Category" loading="lazy" width="28" height="28" decoding="async" class="me-3" src="<?= $c['src'] ?>" />
                         <div class="d-flex align-items-center parts-wrapper w-100">
                             <span class="text-truncate d-block w-100 fw-bold" style="font-size: 12px;">
