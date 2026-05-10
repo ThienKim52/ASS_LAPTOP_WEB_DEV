@@ -147,9 +147,13 @@ $draftPosts = $pdo->query("SELECT COUNT(*) FROM articles WHERE published_at IS N
                                         <small class="text-muted mt-1 d-block"><i class="ti-info-alt me-1"></i>Để trống để lưu dưới dạng bản nháp.</small>
                                     </div>
                                     <div class="mb-0">
-                                        <label class="form-label fw-bold">Ảnh đại diện (URL)</label>
+                                        <label class="form-label fw-bold">Ảnh đại diện</label>
                                         <div class="input-group mb-2">
-                                            <input type="text" name="thumbnail_url" id="articleThumbnailUrl" class="form-control" placeholder="https://...">
+                                            <input type="text" name="thumbnail_url" id="articleThumbnailUrl" class="form-control" placeholder="URL ảnh...">
+                                            <input type="file" id="thumbnailUpload" class="d-none" accept="image/*">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('thumbnailUpload').click()" title="Tải ảnh lên">
+                                                <i class="ti-upload"></i>
+                                            </button>
                                         </div>
                                         <div id="thumbnailPreview" class="mt-2 border rounded p-2 text-center bg-white" style="min-height: 100px;">
                                             <span class="text-muted small">Xem trước hình ảnh</span>
@@ -204,10 +208,23 @@ $draftPosts = $pdo->query("SELECT COUNT(*) FROM articles WHERE published_at IS N
     document.addEventListener('DOMContentLoaded', function() {
         tinymce.init({
             selector: '#articleContent',
-            height: 450,
-            plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table code help wordcount',
-            toolbar: 'undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-            content_style: 'body { font-family:Inter,Helvetica,Arial,sans-serif; font-size:16px }'
+            height: 550,
+            plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table code help wordcount emoticons',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image media table | emoticons charmap | removeformat | help',
+            images_upload_url: 'ajax/admin/article_image_upload.php',
+            automatic_uploads: true,
+            relative_urls: false,
+            remove_script_host: false,
+            document_base_url: 'http://localhost/store/',
+            content_style: 'body { font-family:Inter,Helvetica,Arial,sans-serif; font-size:16px; line-height: 1.6; color: #333; } img { max-width: 100%; height: auto; border-radius: 8px; }',
+            image_advtab: true,
+            image_title: true,
+            image_dimensions: true,
+            image_class_list: [
+                {title: 'None', value: ''},
+                {title: 'Responsive', value: 'img-fluid rounded'},
+                {title: 'Shadow', value: 'img-fluid rounded shadow-sm'}
+            ]
         });
 
         loadPosts();
@@ -224,6 +241,37 @@ $draftPosts = $pdo->query("SELECT COUNT(*) FROM articles WHERE published_at IS N
                 preview.innerHTML = `<img src="${url}" class="img-fluid rounded shadow-sm" style="max-height: 150px;" onerror="this.parentElement.innerHTML='<span class=\"text-danger\">Link ảnh không hợp lệ</span>'">`;
             } else {
                 preview.innerHTML = '<span class="text-muted small">Xem trước hình ảnh</span>';
+            }
+        };
+
+        document.getElementById('thumbnailUpload').onchange = function() {
+            if (this.files && this.files[0]) {
+                const formData = new FormData();
+                formData.append('file', this.files[0]);
+                
+                const btn = this.nextElementSibling;
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                btn.disabled = true;
+
+                fetch('ajax/admin/article_image_upload.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.location) {
+                        document.getElementById('articleThumbnailUrl').value = data.location;
+                        document.getElementById('articleThumbnailUrl').oninput();
+                    } else {
+                        alert('Lỗi tải ảnh lên');
+                    }
+                })
+                .catch(err => alert('Lỗi: ' + err))
+                .finally(() => {
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                });
             }
         };
     });
