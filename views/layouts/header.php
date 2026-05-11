@@ -370,8 +370,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<script src="assets/javascript/cart.js"></script>
-
 <!-- Logout confirmation script -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
