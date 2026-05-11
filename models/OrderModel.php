@@ -227,19 +227,30 @@ class OrderModel extends BaseModel {
     }
 
     /**
+    /**
      * Admin: Update order status. Includes Stock Restoration on cancel.
      */
     public function updateStatus(int $orderId, string $status, ?string $paymentStatus = null): bool {
         try {
+            // Map UI status values to database ENUM values
+            $statusMap = [
+                'pending' => 'pending',
+                'processing' => 'confirmed',
+                'completed' => 'completed',
+                'cancelled' => 'canceled'  // Database uses 'canceled' (one 'l')
+            ];
+            
+            $dbStatus = $statusMap[$status] ?? $status;  // Use mapped value or original if not in map
+            
             $stmt = $this->db->prepare('SELECT status FROM orders WHERE id = ?');
             $stmt->execute([$orderId]);
             $currentStatus = $stmt->fetchColumn();
-            if (!$currentStatus) return false;
+            if ($currentStatus === false) return false;
 
             $this->db->beginTransaction();
 
             // Restore stock if canceling
-            if ($status === 'canceled' && $currentStatus !== 'canceled') {
+            if ($dbStatus === 'canceled' && $currentStatus !== 'canceled') {
                 $iStmt = $this->db->prepare('SELECT variant_id, quantity FROM order_items WHERE order_id = ?');
                 $iStmt->execute([$orderId]);
                 $items = $iStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -253,7 +264,7 @@ class OrderModel extends BaseModel {
             }
 
             $sql = 'UPDATE orders SET status = ?' . ($paymentStatus ? ', payment_status = ?' : '') . ' WHERE id = ?';
-            $params = [$status];
+            $params = [$dbStatus];
             if ($paymentStatus) $params[] = $paymentStatus;
             $params[] = $orderId;
 
@@ -263,7 +274,12 @@ class OrderModel extends BaseModel {
             $this->db->commit();
             return true;
         } catch (Exception $e) {
-            $this->db->rollBack();
+            try {
+                $this->db->rollBack();
+            } catch (Exception $ex) {
+                // Rollback failed, ignore
+            }
+            error_log('OrderModel::updateStatus error: ' . $e->getMessage());
             return false;
         }
     }
@@ -335,15 +351,17 @@ class OrderModel extends BaseModel {
             $stmt = $this->db->prepare(
                 "INSERT INTO orders (user_id, order_code, shipping_address, total_amount, 
                                     discount_amount, final_amount, payment_method)
-                 VALUES (?, ?, ?, ?, 0, ?, ?)"
+                 VALUES (?, ?, ?, ?, ?, ?, ?)"
             );
-            $userId = $_SESSION['user_id'] ?? 0;
+            $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
             $orderCode = 'ORD-' . strtoupper(substr(uniqid(), -8));
-            $total = $data['total'] ?? $data['subtotal'] ?? 0;
+            $totalAmount = $data['subtotal'] ?? 0;
+            $discountAmount = $data['discount_amount'] ?? 0;
+            $finalAmount = $data['total'] ?? ($totalAmount - $discountAmount);
 
             $stmt->execute([
                 $userId, $orderCode, $data['shipping_address'] ?? '',
-                $total, $total, $data['payment_method'] ?? 'cod'
+                $totalAmount, $discountAmount, $finalAmount, $data['payment_method'] ?? 'cod'
             ]);
             $orderId = (int) $this->db->lastInsertId();
 
@@ -396,13 +414,22 @@ class OrderModel extends BaseModel {
      * Admin: Get paginated orders with optional status filter.
      */
     public function getPaginatedOrders($page = 1, $limit = 10, $status = 'all') {
+        // Map UI status values to database ENUM values
+        $statusMap = [
+            'pending' => 'pending',
+            'processing' => 'confirmed',
+            'completed' => 'completed',
+            'cancelled' => 'canceled'
+        ];
+        
         $offset = ($page - 1) * $limit;
         $where = '1=1';
         $params = [];
 
         if ($status !== 'all') {
-            $where .= " AND o.status = ?";
-            $params[] = $status;
+            $dbStatus = $statusMap[$status] ?? $status;
+            $where .= " AND o.status = :status";
+            $params[':status'] = $dbStatus;
         }
 
         $sql = "SELECT o.*, u.fullname AS customer_name, u.email AS customer_email, u.phone AS customer_phone
@@ -414,21 +441,29 @@ class OrderModel extends BaseModel {
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
-        foreach ($params as $k => $v) {
-            $stmt->bindValue($k + 1, $v);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
         }
         $stmt->execute();
         $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Map fields for legacy views
+        // Map database fields for legacy views
         foreach ($orders as &$o) {
             $o['total'] = $o['final_amount'] ?? $o['total_amount'] ?? 0;
+            // Map database status back to UI status
+            $reverseMap = ['pending' => 'pending', 'confirmed' => 'processing', 'completed' => 'completed', 'canceled' => 'cancelled'];
+            if (isset($reverseMap[$o['status']])) {
+                $o['status'] = $reverseMap[$o['status']];
+            }
         }
 
-        // Count total
+        // Count total - need to use mapped status for count as well
         $countSql = "SELECT COUNT(*) FROM orders o WHERE $where";
         $countStmt = $this->db->prepare($countSql);
-        $countStmt->execute($params);
+        foreach ($params as $key => $value) {
+            $countStmt->bindValue($key, $value);
+        }
+        $countStmt->execute();
         $total = (int)$countStmt->fetchColumn();
 
         return [

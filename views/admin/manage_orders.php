@@ -37,7 +37,6 @@ function getStatusColor($status) {
     switch($status) {
         case 'pending': return 'warning';
         case 'processing': return 'info';
-        case 'shipped': return 'primary';
         case 'completed': return 'success';
         case 'cancelled': return 'danger';
         default: return 'secondary';
@@ -48,7 +47,6 @@ function getStatusLabel($status) {
     switch($status) {
         case 'pending': return 'Chờ duyệt';
         case 'processing': return 'Đang xử lý';
-        case 'shipped': return 'Đang giao';
         case 'completed': return 'Hoàn tất';
         case 'cancelled': return 'Đã huỷ';
         default: return $status;
@@ -174,7 +172,6 @@ function getStatusLabel($status) {
                                                     <option value="">-- Cập nhật --</option>
                                                     <option value="pending" <?= $order['status'] === 'pending' ? 'selected' : '' ?>>Chờ duyệt</option>
                                                     <option value="processing" <?= $order['status'] === 'processing' ? 'selected' : '' ?>>Đang xử lý</option>
-                                                    <option value="shipped" <?= $order['status'] === 'shipped' ? 'selected' : '' ?>>Đang giao</option>
                                                     <option value="completed" <?= $order['status'] === 'completed' ? 'selected' : '' ?>>Hoàn tất</option>
                                                     <option value="cancelled" <?= $order['status'] === 'cancelled' ? 'selected' : '' ?>>Đã huỷ</option>
                                                 </select>

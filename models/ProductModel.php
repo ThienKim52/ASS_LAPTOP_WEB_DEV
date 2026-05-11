@@ -23,11 +23,11 @@ class ProductModel extends BaseModel {
             b.name   AS brand, 
             c.name   AS category,
             c.slug   AS category_slug,
-            (SELECT base_price FROM product_variants WHERE product_id = p.id ORDER BY base_price ASC LIMIT 1) AS price,
+            COALESCE((SELECT base_price FROM product_variants WHERE product_id = p.id ORDER BY base_price ASC LIMIT 1), 0) AS price,
             (SELECT storage    FROM product_variants WHERE product_id = p.id ORDER BY base_price ASC LIMIT 1) AS storage,
             (SELECT ram        FROM product_variants WHERE product_id = p.id ORDER BY base_price ASC LIMIT 1) AS ram,
-            (SELECT img_url    FROM product_variants WHERE product_id = p.id AND img_url IS NOT NULL LIMIT 1)  AS image,
-            (SELECT SUM(quantity) FROM product_variants WHERE product_id = p.id)                                AS stock
+            COALESCE((SELECT img_url FROM product_variants WHERE product_id = p.id AND img_url IS NOT NULL LIMIT 1), 'assets/img/placeholder.png') AS image,
+            COALESCE((SELECT SUM(quantity) FROM product_variants WHERE product_id = p.id), 0) AS stock
         FROM products p
         LEFT JOIN brands     b ON p.brand_id    = b.id
         LEFT JOIN categories c ON p.category_id = c.id";
@@ -82,6 +82,16 @@ class ProductModel extends BaseModel {
         $query = "SELECT * FROM (" . $this->getBaseSelect() . ") AS t WHERE 1=1";
         $params = [];
 
+        if (!empty($filters['search'])) {
+            $query .= " AND (name LIKE ? OR brand LIKE ? OR category LIKE ? OR short_description LIKE ? OR description LIKE ?)";
+            $searchTerm = '%' . $filters['search'] . '%';
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+        }
+
         if (!empty($filters['brand'])) {
             $ph = implode(',', array_fill(0, count($filters['brand']), '?'));
             $query .= " AND brand IN ($ph)";
@@ -121,6 +131,16 @@ class ProductModel extends BaseModel {
         try {
             $query = "SELECT COUNT(*) AS total FROM (" . $this->getBaseSelect() . ") AS t WHERE 1=1";
             $params = [];
+
+            if (!empty($filters['search'])) {
+                $query .= " AND (name LIKE ? OR brand LIKE ? OR category LIKE ? OR short_description LIKE ? OR description LIKE ?)";
+                $searchTerm = '%' . $filters['search'] . '%';
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+            }
 
             if (!empty($filters['brand']) && is_array($filters['brand'])) {
                 $ph = implode(',', array_fill(0, count($filters['brand']), '?'));
@@ -216,10 +236,22 @@ class ProductModel extends BaseModel {
                 // Color variants
                 if (!empty($r['color']) && !in_array($r['color'], $seenColor)) {
                     $seenColor[] = $r['color'];
+                    $colorName = $r['color'];
+                    $colorMap = [
+                        'Black' => '#111111',
+                        'Silver' => '#c0c0c0',
+                        'Gray' => '#6c757d',
+                        'Space Gray' => '#5c5f66',
+                        'Space Black' => '#111827',
+                        'Midnight' => '#1f2a44',
+                        'Starlight' => '#f2e8cf',
+                        'White' => '#f8f9fa',
+                        'Blue' => '#4f6df5',
+                    ];
                     $grouped['color'][] = [
                         'id'             => $r['id'],
-                        'variant_name'   => $r['color'],
-                        'variant_value'  => $r['color'],
+                        'variant_name'   => $colorName,
+                        'variant_value'  => $colorMap[$colorName] ?? $colorName,
                         'price_modifier' => 0,
                         'stock'          => (int)$r['quantity'],
                         'is_default'     => $isFirst['color'] ? 1 : 0,
@@ -297,10 +329,342 @@ class ProductModel extends BaseModel {
         }
     }
 
-    // ========================= ADMIN STUBS =========================
-    public function createProduct($data) { return false; }
-    public function updateProduct($id, $data) { return false; }
-    public function deleteProduct($id) { return false; }
+    // ========================= ADMIN FUNCTIONS =========================
+    
+    /**
+     * Create a new product with variant
+     */
+    public function createProduct($data) {
+        try {
+            $this->db->beginTransaction();
+
+            // Get or create brand
+            $brandId = $this->getOrCreateBrand($data['brand'] ?? 'Unknown');
+            if (!$brandId) {
+                throw new Exception("Failed to create/get brand");
+            }
+            
+            // Get or create category
+            $categoryId = $this->getOrCreateCategory($data['category'] ?? 'Other');
+            if (!$categoryId) {
+                throw new Exception("Failed to create/get category");
+            }
+            
+            // Create slug from name
+            $slug = $this->createSlug($data['name']);
+            
+            // Ensure unique slug
+            $slug = $this->makeUniqueSlug($slug);
+            
+            // Insert product
+            $stmt = $this->db->prepare(
+                "INSERT INTO products 
+                 (name, slug, brand_id, category_id, short_description, detail_description, created_at, updated_at) 
+                 VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())"
+            );
+            $stmt->execute([
+                $data['name'],
+                $slug,
+                $brandId,
+                $categoryId,
+                substr($data['description'] ?? '', 0, 100), // short_description
+                $data['description'] ?? ''
+            ]);
+            
+            $productId = $this->db->lastInsertId();
+            if (!$productId) {
+                throw new Exception("Failed to get product ID after insert");
+            }
+            
+            // Create product variant
+            $skuCode = $this->generateSKU($productId);
+            
+            $stmt = $this->db->prepare(
+                "INSERT INTO product_variants 
+                 (product_id, sku_code, ram, storage, quantity, base_price, img_url) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?)"
+            );
+            $stmt->execute([
+                $productId,
+                $skuCode,
+                $data['ram'] ?? null,
+                $data['storage'] ?? null,
+                (int)($data['stock'] ?? 0),
+                (float)($data['price'] ?? 0),
+                $data['image'] ?? 'assets/img/placeholder.png'
+            ]);
+            
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log("createProduct error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Update existing product
+     */
+    public function updateProduct($id, $data) {
+        try {
+            $this->db->beginTransaction();
+            
+            // Get or create brand
+            $brandId = $this->getOrCreateBrand($data['brand'] ?? 'Unknown');
+            
+            // Get or create category
+            $categoryId = $this->getOrCreateCategory($data['category'] ?? 'Other');
+            
+            // Update product
+            $stmt = $this->db->prepare(
+                "UPDATE products 
+                 SET name = ?, brand_id = ?, category_id = ?, 
+                     short_description = ?, detail_description = ?, updated_at = NOW()
+                 WHERE id = ?"
+            );
+            $stmt->execute([
+                $data['name'],
+                $brandId,
+                $categoryId,
+                substr($data['description'] ?? '', 0, 100),
+                $data['description'] ?? '',
+                $id
+            ]);
+            
+            // Update variant
+            $stmt = $this->db->prepare(
+                "UPDATE product_variants 
+                 SET ram = ?, storage = ?, quantity = ?, base_price = ?"
+                . (isset($data['image']) && $data['image'] ? ", img_url = ?" : "")
+                . " WHERE product_id = ? 
+                 LIMIT 1"
+            );
+            
+            $params = [
+                $data['ram'] ?? null,
+                $data['storage'] ?? null,
+                (int)($data['stock'] ?? 0),
+                (float)($data['price'] ?? 0)
+            ];
+            
+            if (isset($data['image']) && $data['image']) {
+                $params[] = $data['image'];
+            }
+            
+            $params[] = $id;
+            $stmt->execute($params);
+            
+            $this->db->commit();
+            return true;
+        } catch (PDOException $e) {
+            $this->db->rollBack();
+            error_log("updateProduct error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Delete product and its variants
+     */
+    public function deleteProduct($id) {
+        try {
+            $stmt = $this->db->prepare("DELETE FROM products WHERE id = ?");
+            return $stmt->execute([$id]);
+        } catch (PDOException $e) {
+            error_log("deleteProduct error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Get or create brand by name
+     * Returns brand ID or null on failure
+     */
+    private function getOrCreateBrand($brandName) {
+        try {
+            if (empty($brandName)) {
+                $brandName = 'Unknown';
+            }
+            
+            // Try to find existing brand
+            $stmt = $this->db->prepare("SELECT id FROM brands WHERE name = ? LIMIT 1");
+            $stmt->execute([$brandName]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($result && isset($result['id'])) {
+                return (int)$result['id'];
+            }
+            
+            // Create new brand
+            $slug = $this->createSlug($brandName);
+            $slug = $this->makeUniqueBrandSlug($slug);
+            
+            $stmt = $this->db->prepare(
+                "INSERT INTO brands (name, slug, created_at) VALUES (?, ?, NOW())"
+            );
+            if (!$stmt->execute([$brandName, $slug])) {
+                throw new Exception("Failed to insert brand");
+            }
+            
+            $brandId = $this->db->lastInsertId();
+            if (!$brandId) {
+                throw new Exception("Failed to get brand ID");
+            }
+            
+            return (int)$brandId;
+        } catch (Exception $e) {
+            error_log("getOrCreateBrand error: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Get or create category by name
+     * Returns category ID or null on failure
+     */
+    private function getOrCreateCategory($categoryName) {
+        try {
+            if (empty($categoryName)) {
+                $categoryName = 'Other';
+            }
+            
+            // Try to find existing category
+            $stmt = $this->db->prepare("SELECT id FROM categories WHERE name = ? LIMIT 1");
+            $stmt->execute([$categoryName]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($result && isset($result['id'])) {
+                return (int)$result['id'];
+            }
+            
+            // Create new category
+            $slug = $this->createSlug($categoryName);
+            $slug = $this->makeUniqueCategorySlug($slug);
+            
+            $stmt = $this->db->prepare(
+                "INSERT INTO categories (name, slug, created_at) VALUES (?, ?, NOW())"
+            );
+            if (!$stmt->execute([$categoryName, $slug])) {
+                throw new Exception("Failed to insert category");
+            }
+            
+            $categoryId = $this->db->lastInsertId();
+            if (!$categoryId) {
+                throw new Exception("Failed to get category ID");
+            }
+            
+            return (int)$categoryId;
+        } catch (Exception $e) {
+            error_log("getOrCreateCategory error: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Create URL-friendly slug from text
+     */
+    private function createSlug($text) {
+        // Convert to lowercase
+        $slug = strtolower($text);
+        
+        // Replace spaces with hyphens
+        $slug = preg_replace('/\s+/', '-', $slug);
+        
+        // Remove special characters, keep only alphanumeric and hyphens
+        $slug = preg_replace('/[^a-z0-9-]/', '', $slug);
+        
+        // Remove multiple consecutive hyphens
+        $slug = preg_replace('/-+/', '-', $slug);
+        
+        // Trim hyphens from start and end
+        $slug = trim($slug, '-');
+        
+        return $slug;
+    }
+    
+    /**
+     * Ensure slug is unique for products
+     */
+    private function makeUniqueSlug($slug, $originalSlug = null) {
+        if (!$originalSlug) {
+            $originalSlug = $slug;
+        }
+        
+        try {
+            $stmt = $this->db->prepare("SELECT COUNT(*) as cnt FROM products WHERE slug = ?");
+            $stmt->execute([$slug]);
+            $result = $stmt->fetch();
+            
+            if ($result['cnt'] == 0) {
+                return $slug;
+            }
+            
+            // Add number suffix
+            $i = 1;
+            do {
+                $newSlug = $originalSlug . '-' . $i;
+                $stmt = $this->db->prepare("SELECT COUNT(*) as cnt FROM products WHERE slug = ?");
+                $stmt->execute([$newSlug]);
+                $result = $stmt->fetch();
+                if ($result['cnt'] == 0) {
+                    return $newSlug;
+                }
+                $i++;
+            } while ($i < 100);
+            
+            return $slug . '-' . time();
+        } catch (PDOException $e) {
+            return $slug . '-' . time();
+        }
+    }
+    
+    /**
+     * Ensure slug is unique for brands
+     */
+    private function makeUniqueBrandSlug($slug) {
+        try {
+            $stmt = $this->db->prepare("SELECT COUNT(*) as cnt FROM brands WHERE slug = ?");
+            $stmt->execute([$slug]);
+            $result = $stmt->fetch();
+            
+            if ($result['cnt'] == 0) {
+                return $slug;
+            }
+            
+            return $slug . '-' . time();
+        } catch (PDOException $e) {
+            return $slug . '-' . time();
+        }
+    }
+    
+    /**
+     * Ensure slug is unique for categories
+     */
+    private function makeUniqueCategorySlug($slug) {
+        try {
+            $stmt = $this->db->prepare("SELECT COUNT(*) as cnt FROM categories WHERE slug = ?");
+            $stmt->execute([$slug]);
+            $result = $stmt->fetch();
+            
+            if ($result['cnt'] == 0) {
+                return $slug;
+            }
+            
+            return $slug . '-' . time();
+        } catch (PDOException $e) {
+            return $slug . '-' . time();
+        }
+    }
+    
+    /**
+     * Generate unique SKU code
+     */
+    private function generateSKU($productId) {
+        // Format: SKU-PRODUCTID-TIMESTAMP
+        return 'SKU-' . str_pad($productId, 5, '0', STR_PAD_LEFT) . '-' . time();
+    }
+    
     public function getAllBrands() {
         return $this->db->query("SELECT * FROM brands ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
     }
