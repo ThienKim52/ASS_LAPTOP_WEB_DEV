@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 10, 2026 at 08:07 AM
+-- Generation Time: May 11, 2026 at 05:33 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -55,16 +55,17 @@ CREATE TABLE `articles` (
   `meta_keywords` varchar(255) DEFAULT NULL,
   `thumbnail_url` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `published_at` timestamp NULL DEFAULT NULL
+  `published_at` timestamp NULL DEFAULT NULL,
+  `view_count` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `articles`
 --
 
-INSERT INTO `articles` (`id`, `admin_id`, `title`, `slug`, `content`, `meta_title`, `meta_description`, `meta_keywords`, `thumbnail_url`, `created_at`, `published_at`) VALUES
-(1, 1, 'Top 5 Laptop Gaming Tot Nhat 2025', 'top-5-laptop-gaming-tot-nhat-2025', '<p>Noi dung chi tiet ve top 5 laptop gaming 2025...</p>', 'Top 5 Laptop Gaming 2025 | LaptopShop VN', 'Danh sach top 5 laptop gaming tot nhat nam 2025 voi hieu nang cao, tan nhiet tot.', 'laptop gaming, laptop gaming 2025, laptop choi game', NULL, '2026-05-08 15:05:19', '2026-05-08 15:05:19'),
-(2, 1, 'MacBook Air M2 - Co Dang Mua Khong?', 'macbook-air-m2-co-dang-mua-khong', '<p>Danh gia chi tiet MacBook Air M2...</p>', 'Review MacBook Air M2 | LaptopShop VN', 'Danh gia chi tiet MacBook Air M2 - hieu nang, thiet ke, pin va gia ban.', 'macbook air m2, apple m2, review macbook', NULL, '2026-05-08 15:05:19', '2026-05-08 15:05:19');
+INSERT INTO `articles` (`id`, `admin_id`, `title`, `slug`, `content`, `meta_title`, `meta_description`, `meta_keywords`, `thumbnail_url`, `created_at`, `published_at`, `view_count`) VALUES
+(1, 1, 'Top 5 Laptop Gaming Tot Nhat 2025', 'top-5-laptop-gaming-tot-nhat-2025', '<p>Noi dung chi tiet ve top 5 laptop gaming 2025...</p>', 'Top 5 Laptop Gaming 2025 | LaptopShop VN', 'Danh sach top 5 laptop gaming tot nhat nam 2025 voi hieu nang cao, tan nhiet tot.', 'laptop gaming, laptop gaming 2025, laptop choi game', NULL, '2026-05-08 15:05:19', '2026-05-08 15:05:19', 0),
+(2, 1, 'MacBook Air M2 - Co Dang Mua Khong?', 'macbook-air-m2-co-dang-mua-khong', '<p>Danh gia chi tiet MacBook Air M2...</p>', 'Review MacBook Air M2 | LaptopShop VN', 'Danh gia chi tiet MacBook Air M2 - hieu nang, thiet ke, pin va gia ban.', 'macbook air m2, apple m2, review macbook', NULL, '2026-05-08 15:05:19', '2026-05-08 15:05:19', 0);
 
 -- --------------------------------------------------------
 
@@ -103,7 +104,8 @@ INSERT INTO `brands` (`id`, `name`, `slug`, `logo_url`, `created_at`) VALUES
 (1, 'Asus', 'asus', NULL, '2026-05-08 15:05:18'),
 (2, 'Dell', 'dell', NULL, '2026-05-08 15:05:18'),
 (3, 'HP', 'hp', NULL, '2026-05-08 15:05:18'),
-(4, 'Apple', 'apple', NULL, '2026-05-08 15:05:18');
+(4, 'Apple', 'apple', NULL, '2026-05-08 15:05:18'),
+(5, 'Galaxy', 'galaxy', NULL, '2026-05-11 02:03:49');
 
 -- --------------------------------------------------------
 
@@ -152,7 +154,9 @@ INSERT INTO `categories` (`id`, `name`, `slug`, `is_featured`, `created_at`) VAL
 (1, 'Laptop Gaming', 'laptop-gaming', 1, '2026-05-08 15:05:18'),
 (2, 'Laptop Van Phong', 'laptop-van-phong', 1, '2026-05-08 15:05:18'),
 (3, 'Laptop Do Hoa', 'laptop-do-hoa', 0, '2026-05-08 15:05:18'),
-(4, 'MacBook', 'macbook', 1, '2026-05-08 15:05:18');
+(4, 'MacBook', 'macbook', 1, '2026-05-08 15:05:18'),
+(5, 'Other', 'other', 0, '2026-05-11 02:00:53'),
+(6, 'Smartphone', 'smartphone', 0, '2026-05-11 02:03:49');
 
 -- --------------------------------------------------------
 
@@ -176,7 +180,24 @@ CREATE TABLE `contacts` (
 
 INSERT INTO `contacts` (`id`, `customer_name`, `customer_email`, `subject`, `message`, `status`, `created_at`) VALUES
 (1, 'Khach Hang X', 'khachhangx@gmail.com', 'Hoi ve thoi gian giao hang', 'Cho minh hoi don hang giao noi thanh mat bao lau?', 'unread', '2026-05-08 15:05:19'),
-(2, 'Nguyen Thi Y', 'nty@gmail.com', 'Yeu cau xuat hoa don VAT', 'Cho toi xin hoa don VAT cho don hang DH240001.', 'replied', '2026-05-08 15:05:19');
+(2, 'Nguyen Thi Y', 'nty@gmail.com', 'Yeu cau xuat hoa don VAT', 'Cho toi xin hoa don VAT cho don hang DH240001.', 'replied', '2026-05-08 15:05:19'),
+(3, 'aimee', 'kim.thanthien04@hcmut.edu.vn', '', '12345678910', 'unread', '2026-05-11 02:57:20');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `coupons`
+--
+
+CREATE TABLE `coupons` (
+  `id` int(11) NOT NULL,
+  `code` varchar(50) NOT NULL,
+  `discount_percent` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `description` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -269,6 +290,13 @@ CREATE TABLE `orders` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`id`, `user_id`, `order_code`, `shipping_address`, `total_amount`, `discount_amount`, `final_amount`, `payment_method`, `payment_status`, `status`, `created_at`, `updated_at`) VALUES
+(5, 2, 'ORD-2BD46BFA', '12', 1200000.00, 0.00, 1230000.00, 'cod', 'unpaid', 'pending', '2026-05-11 02:45:17', '2026-05-11 02:45:17');
+
 -- --------------------------------------------------------
 
 --
@@ -283,6 +311,13 @@ CREATE TABLE `order_items` (
   `unit_price` decimal(15,2) NOT NULL,
   `total_price` decimal(15,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `order_items`
+--
+
+INSERT INTO `order_items` (`id`, `order_id`, `variant_id`, `quantity`, `unit_price`, `total_price`) VALUES
+(1, 5, 5, 1, 1200000.00, 1200000.00);
 
 -- --------------------------------------------------------
 
@@ -308,9 +343,10 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `category_id`, `brand_id`, `name`, `slug`, `short_description`, `detail_description`, `is_featured`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 'Asus ROG Strix G15', 'asus-rog-strix-g15', 'Co may choi game thuc thu', NULL, 1, '2026-05-08 15:05:18', '2026-05-08 15:05:18'),
+(1, 5, 1, 'Asus ROG Strix G15', 'asus-rog-strix-g15', '', '', 1, '2026-05-08 15:05:18', '2026-05-11 02:04:22'),
 (2, 2, 2, 'Dell Inspiron 15', 'dell-inspiron-15', 'Laptop van phong ben bi', NULL, 1, '2026-05-08 15:05:18', '2026-05-08 15:05:18'),
-(3, 4, 4, 'MacBook Air M2', 'macbook-air-m2', 'Sieu mong nhe, hieu nang manh', NULL, 1, '2026-05-08 15:05:18', '2026-05-08 15:05:18');
+(3, 4, 4, 'MacBook Air M2', 'macbook-air-m2', 'Sieu mong nhe, hieu nang manh', NULL, 1, '2026-05-08 15:05:18', '2026-05-08 15:05:18'),
+(4, 6, 5, 'Galaxy A17', 'galaxy-a17', '', '', 0, '2026-05-11 02:03:49', '2026-05-11 02:32:45');
 
 -- --------------------------------------------------------
 
@@ -335,10 +371,23 @@ CREATE TABLE `product_variants` (
 --
 
 INSERT INTO `product_variants` (`id`, `product_id`, `sku_code`, `ram`, `color`, `storage`, `quantity`, `base_price`, `img_url`) VALUES
-(1, 1, 'ROG-G15-8GB-BLK', '8GB', 'Black', '512GB SSD', 10, 25000000.00, NULL),
-(2, 1, 'ROG-G15-16GB-BLK', '16GB', 'Black', '512GB SSD', 5, 27500000.00, NULL),
-(3, 2, 'DELL-INS-8GB-SIL', '8GB', 'Silver', '256GB SSD', 20, 15000000.00, NULL),
-(4, 3, 'MAC-M2-8GB-MID', '8GB', 'Midnight', '256GB SSD', 8, 28000000.00, NULL);
+(1, 1, 'ROG-G15-8GB-BLK', '8GB', 'Black', '', 18, 25000000.00, 'assets/img/products/Asus ROG Strix G15.jpg'),
+(2, 1, 'ROG-G15-16GB-BLK', '16GB', 'Black', '512GB SSD', 5, 27500000.00, 'assets/img/products/Asus ROG Strix G15.jpg'),
+(3, 2, 'DELL-INS-8GB-SIL', '8GB', 'Silver', '256GB SSD', 20, 15000000.00, 'assets/img/products/Dell Inspiron 15.jpg'),
+(4, 3, 'MAC-M2-8GB-MID', '8GB', 'Midnight', '256GB SSD', 8, 28000000.00, 'assets/img/products/MacBook Air M2.jpg'),
+(5, 4, 'SKU-00004-1778465029', '6GB', NULL, '64GB', 17, 1200000.00, 'assets/img/products/product_6a01390579e4d.jpg');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `qna`
+--
+
+CREATE TABLE `qna` (
+  `id` int(11) NOT NULL,
+  `question` text NOT NULL,
+  `answer` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -382,11 +431,11 @@ CREATE TABLE `site_settings` (
 
 INSERT INTO `site_settings` (`key`, `value`, `updated_at`) VALUES
 ('about.hero_subtitle', 'Shopping Online', '2026-05-10 05:48:52'),
-('about.intro', '', '2026-05-10 05:48:52'),
-('about.intro_title', '', '2026-05-10 05:48:52'),
-('about.mission', '', '2026-05-10 05:48:52'),
-('about.mission_title', '', '2026-05-10 05:48:52'),
-('about.page_title', 'Black Friday', '2026-05-10 05:48:52'),
+('about.intro', 'We are a leading phone retailer with years of experience in providing quality smartphones and accessories to customers worldwide.', '2026-05-10 11:00:25'),
+('about.intro_title', 'Welcome to LaptopShop', '2026-05-10 11:00:25'),
+('about.mission', 'Our mission is to provide quality phones at affordable prices while ensuring the best customer service experience.', '2026-05-10 11:00:25'),
+('about.mission_title', 'Our Mission', '2026-05-10 11:00:25'),
+('about.page_title', 'Laptop Shop', '2026-05-10 11:00:25'),
 ('about.stats_customers', '', '2026-05-10 05:48:52'),
 ('about.stats_customers_label', '', '2026-05-10 05:48:52'),
 ('about.stats_products', '', '2026-05-10 05:48:52'),
@@ -395,13 +444,16 @@ INSERT INTO `site_settings` (`key`, `value`, `updated_at`) VALUES
 ('about.stats_reviews_label', '', '2026-05-10 05:48:52'),
 ('about.stats_years', '', '2026-05-10 05:48:52'),
 ('about.stats_years_label', '', '2026-05-10 05:48:52'),
-('about.values', '', '2026-05-10 05:48:52'),
-('about.values_title', '', '2026-05-10 05:48:52'),
-('about.vision', '', '2026-05-10 05:48:52'),
-('about.vision_title', '', '2026-05-10 05:48:52'),
+('about.values', 'Quality\nTrust\nService\nInnovation\nCustomer First', '2026-05-10 11:00:25'),
+('about.values_title', 'Our Core Values', '2026-05-10 11:00:25'),
+('about.vision', 'To be the most trusted phone store in the region and expand our services globally.', '2026-05-10 11:00:25'),
+('about.vision_title', 'Our Vision', '2026-05-10 11:00:25'),
 ('address', '123 Duong Cong Nghe, Quan 1, TP.HCM', '2026-05-08 15:05:18'),
 ('company_name', 'LaptopShop VN', '2026-05-08 15:05:18'),
 ('email', 'contact@laptopshop.vn', '2026-05-08 15:05:18'),
+('general.site_description', '', '2026-05-10 10:13:44'),
+('general.site_name', 'LaptopShop', '2026-05-10 10:13:44'),
+('general.site_tagline', 'Your Trusted Phone Partner', '2026-05-10 10:13:44'),
 ('homepage_banner_1', '/uploads/settings/banner1.jpg', '2026-05-08 15:05:18'),
 ('homepage_banner_2', '/uploads/settings/banner2.jpg', '2026-05-08 15:05:18'),
 ('homepage_intro_text', 'Chung toi chuyen cung cap cac dong laptop chinh hang, gia canh tranh voi dich vu hau mai tot nhat thi truong.', '2026-05-08 15:05:18'),
@@ -499,6 +551,13 @@ ALTER TABLE `contacts`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `coupons`
+--
+ALTER TABLE `coupons`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `code` (`code`);
+
+--
 -- Indexes for table `faqs`
 --
 ALTER TABLE `faqs`
@@ -551,6 +610,12 @@ ALTER TABLE `product_variants`
   ADD KEY `product_id` (`product_id`);
 
 --
+-- Indexes for table `qna`
+--
+ALTER TABLE `qna`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `reviews`
 --
 ALTER TABLE `reviews`
@@ -591,7 +656,7 @@ ALTER TABLE `article_comments`
 -- AUTO_INCREMENT for table `brands`
 --
 ALTER TABLE `brands`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `carts`
@@ -603,19 +668,25 @@ ALTER TABLE `carts`
 -- AUTO_INCREMENT for table `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `contacts`
 --
 ALTER TABLE `contacts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `coupons`
+--
+ALTER TABLE `coupons`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `faqs`
 --
 ALTER TABLE `faqs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `membership_tiers`
@@ -627,25 +698,31 @@ ALTER TABLE `membership_tiers`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `product_variants`
 --
 ALTER TABLE `product_variants`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `qna`
+--
+ALTER TABLE `qna`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `reviews`

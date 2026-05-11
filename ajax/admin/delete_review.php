@@ -17,11 +17,7 @@ if (!$reviewId) {
 
 require_once __DIR__ . '/../../models/ProductReviewModel.php';
 
-<<<<<<< HEAD
 $reviewModel = new ProductReviewModel();
-=======
-$reviewModel = new ProductReviewModel(); // auto-connects via BaseModel
->>>>>>> origin/article-feature
 
 $success = $reviewModel->deleteReview($reviewId);
 

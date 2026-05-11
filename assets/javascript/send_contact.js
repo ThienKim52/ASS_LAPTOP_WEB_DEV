@@ -35,11 +35,7 @@ document.getElementById("contactForm").addEventListener("submit", async function
 
     try {
         const formData = new FormData(this);
-<<<<<<< HEAD
         const res = await fetch("ajax/send_contact.php?action=create", {
-=======
-        const res = await fetch("controllers/ContactController.php?action=create", {
->>>>>>> origin/article-feature
             method: "POST",
             body: formData
         });

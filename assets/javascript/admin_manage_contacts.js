@@ -5,11 +5,6 @@ let currentLimit = 10;
 let deleteTargetId = null;
 
 const tableBody   = document.querySelector("#contactTable tbody");
-<<<<<<< HEAD
-=======
-const viewModal   = new bootstrap.Modal(document.getElementById("viewContactModal"));
-const deleteModal  = new bootstrap.Modal(document.getElementById("deleteContactModal"));
->>>>>>> origin/article-feature
 
 // ======================== INIT ========================
 document.addEventListener("DOMContentLoaded", () => {
@@ -40,7 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const fd = new FormData();
         fd.append("id", deleteTargetId);
         try {
-<<<<<<< HEAD
             const res = await fetch("ajax/send_contact.php?action=delete", { method: "POST", body: fd });
             const r = await res.json();
             if (r.success) {
@@ -53,14 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // Hide modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('deleteContactModal'));
         if (modal) modal.hide();
-=======
-            const res = await fetch("controllers/ContactController.php?action=delete", { method: "POST", body: fd });
-            const r = await res.json();
-            if (r.success) fetchContacts();
-            else alert(r.message);
-        } catch (e) { console.error(e); }
-        deleteModal.hide();
->>>>>>> origin/article-feature
         deleteTargetId = null;
     });
 });
@@ -79,17 +65,12 @@ async function fetchContacts() {
     if (status) params.set('status', status);
 
     try {
-<<<<<<< HEAD
         const res = await fetch(`ajax/send_contact.php?${params}`);
-=======
-        const res = await fetch(`controllers/ContactController.php?${params}`);
->>>>>>> origin/article-feature
         const result = await res.json();
 
         if (result.success) {
             renderTable(result.data.items, result.data);
             renderPagination(result.data);
-<<<<<<< HEAD
             document.getElementById("contactTotal").textContent = `${result.data.total} liên hệ`;
             document.getElementById("contactPaginationInfo").textContent =
                 `Hiển thị ${result.data.items.length} / ${result.data.total} (Trang ${result.data.page}/${result.data.total_pages || 1})`;
@@ -97,14 +78,6 @@ async function fetchContacts() {
     } catch (err) {
         console.error("Failed to fetch contacts:", err);
         showToast('error', 'Không thể tải danh sách liên hệ');
-=======
-            document.getElementById("contactTotal").textContent = `${result.data.total} contacts`;
-            document.getElementById("contactPaginationInfo").textContent =
-                `Showing ${result.data.items.length} of ${result.data.total} (Page ${result.data.page}/${result.data.total_pages || 1})`;
-        }
-    } catch (err) {
-        console.error("Failed to fetch contacts:", err);
->>>>>>> origin/article-feature
     }
 }
 
@@ -113,18 +86,13 @@ function renderTable(items, meta) {
     tableBody.innerHTML = "";
 
     if (!items || items.length === 0) {
-<<<<<<< HEAD
         tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Không tìm thấy liên hệ nào.</td></tr>';
-=======
-        tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No contacts found.</td></tr>';
->>>>>>> origin/article-feature
         return;
     }
 
     const startNum = (meta.page - 1) * meta.limit;
 
     items.forEach((item, i) => {
-<<<<<<< HEAD
         const statusLabels = {
             unread:  '<span class="badge bg-warning text-dark">Chưa đọc</span>',
             read:    '<span class="badge bg-info text-white">Đã đọc</span>',
@@ -134,20 +102,10 @@ function renderTable(items, meta) {
         const row = document.createElement("tr");
         if (item.status === 'unread') row.style.fontWeight = 'bold';
         
-=======
-        const statusBadge = {
-            unread:  '<span class="badge bg-warning text-dark">Unread</span>',
-            read:    '<span class="badge bg-info">Read</span>',
-            replied: '<span class="badge bg-success">Replied</span>',
-        };
-
-        const row = document.createElement("tr");
->>>>>>> origin/article-feature
         row.innerHTML = `
             <td>${startNum + i + 1}</td>
             <td>${escapeHtml(item.customer_name)}</td>
             <td><small>${escapeHtml(item.customer_email)}</small></td>
-<<<<<<< HEAD
             <td><small class="text-truncate d-inline-block" style="max-width:150px">${escapeHtml(item.subject || '(không có)')}</small></td>
             <td><small>${formatDate(item.created_at)}</small></td>
             <td>
@@ -162,22 +120,6 @@ function renderTable(items, meta) {
                     <i class="bi bi-eye"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${item.id}" title="Xoá">
-=======
-            <td><small class="text-truncate d-inline-block" style="max-width:150px">${escapeHtml(item.subject || '(no subject)')}</small></td>
-            <td><small>${formatDate(item.created_at)}</small></td>
-            <td>
-                <select class="form-select form-select-sm contact-status" data-id="${item.id}" style="width:110px">
-                    <option value="unread"  ${item.status === "unread" ? "selected" : ""}>Unread</option>
-                    <option value="read"    ${item.status === "read" ? "selected" : ""}>Read</option>
-                    <option value="replied" ${item.status === "replied" ? "selected" : ""}>Replied</option>
-                </select>
-            </td>
-            <td>
-                <button class="btn btn-sm btn-outline-primary btn-view me-1" data-id="${item.id}" title="View">
-                    <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${item.id}" title="Delete">
->>>>>>> origin/article-feature
                     <i class="bi bi-trash"></i>
                 </button>
             </td>
@@ -227,17 +169,12 @@ tableBody.addEventListener("click", async (e) => {
     // View
     if (btn.classList.contains("btn-view")) {
         try {
-<<<<<<< HEAD
             const res = await fetch(`ajax/send_contact.php?action=get&id=${id}`);
-=======
-            const res = await fetch(`controllers/ContactController.php?action=get&id=${id}`);
->>>>>>> origin/article-feature
             const r = await res.json();
             if (r.success) {
                 document.getElementById("contactViewName").textContent  = r.data.customer_name;
                 document.getElementById("contactViewEmail").textContent = r.data.customer_email;
                 document.getElementById("contactViewDate").textContent  = formatDate(r.data.created_at);
-<<<<<<< HEAD
                 document.getElementById("contactSubject").textContent   = r.data.subject || '(không có chủ đề)';
                 document.getElementById("contactMessage").textContent   = r.data.message;
                 
@@ -252,11 +189,6 @@ tableBody.addEventListener("click", async (e) => {
                     await fetch("ajax/send_contact.php?action=updateStatus", { method: "POST", body: fd });
                     fetchContacts();
                 }
-=======
-                document.getElementById("contactSubject").textContent   = r.data.subject || '(no subject)';
-                document.getElementById("contactMessage").textContent   = r.data.message;
-                viewModal.show();
->>>>>>> origin/article-feature
             }
         } catch (err) { console.error(err); }
     }
@@ -264,10 +196,7 @@ tableBody.addEventListener("click", async (e) => {
     // Delete
     if (btn.classList.contains("btn-delete")) {
         deleteTargetId = id;
-<<<<<<< HEAD
         const deleteModal = new bootstrap.Modal(document.getElementById("deleteContactModal"));
-=======
->>>>>>> origin/article-feature
         deleteModal.show();
     }
 });
@@ -281,7 +210,6 @@ tableBody.addEventListener("change", async (e) => {
         fd.append("id", id);
         fd.append("status", status);
         try {
-<<<<<<< HEAD
             const res = await fetch("ajax/send_contact.php?action=updateStatus", { method: "POST", body: fd });
             const r = await res.json();
             if (r.success) {
@@ -318,15 +246,6 @@ function showToast(type, message) {
     setTimeout(() => toast.remove(), 3000);
 }
 
-=======
-            const res = await fetch("controllers/ContactController.php?action=updateStatus", { method: "POST", body: fd });
-            const r = await res.json();
-            if (!r.success) alert(r.message || "Failed to update");
-        } catch (err) { console.error(err); }
-    }
-});
-
->>>>>>> origin/article-feature
 // ======================== HELPERS ========================
 function escapeHtml(text) {
     const div = document.createElement('div');

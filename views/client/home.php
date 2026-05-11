@@ -56,8 +56,8 @@ $promoStripLink = getSetting('home.promo_strip_link', 'index.php?page=shop');
 $featuredSidebarImg = getSetting('home.featured_sidebar_image', 'assets/img/banners/01KK84Q078JE7HEGK1SF3GGZGZ.webp');
 $featuredSidebarLink = getSetting('home.featured_sidebar_link', 'index.php?page=shop');
 
-$banner1Img = getSetting('home.banner_1_image', 'assets/img/banners/s26-home-0526.webp');
-$banner2Img = getSetting('home.banner_2_image', 'assets/img/banners/iphone-17-pro-max_home_05_2026.webp');
+$banner1Img = getSetting('home.banner_1_image', 'assets/img/banner-1.JPG');
+$banner2Img = getSetting('home.banner_2_image', 'assets/img/banner-2.jpg');
 
 $featuredTitle = 'Laptop nổi bật';
 ?>
