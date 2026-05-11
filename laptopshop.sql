@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 11, 2026 at 05:33 AM
+-- Generation Time: May 11, 2026 at 02:24 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -64,8 +64,14 @@ CREATE TABLE `articles` (
 --
 
 INSERT INTO `articles` (`id`, `admin_id`, `title`, `slug`, `content`, `meta_title`, `meta_description`, `meta_keywords`, `thumbnail_url`, `created_at`, `published_at`, `view_count`) VALUES
-(1, 1, 'Top 5 Laptop Gaming Tot Nhat 2025', 'top-5-laptop-gaming-tot-nhat-2025', '<p>Noi dung chi tiet ve top 5 laptop gaming 2025...</p>', 'Top 5 Laptop Gaming 2025 | LaptopShop VN', 'Danh sach top 5 laptop gaming tot nhat nam 2025 voi hieu nang cao, tan nhiet tot.', 'laptop gaming, laptop gaming 2025, laptop choi game', NULL, '2026-05-08 15:05:19', '2026-05-08 15:05:19', 0),
-(2, 1, 'MacBook Air M2 - Co Dang Mua Khong?', 'macbook-air-m2-co-dang-mua-khong', '<p>Danh gia chi tiet MacBook Air M2...</p>', 'Review MacBook Air M2 | LaptopShop VN', 'Danh gia chi tiet MacBook Air M2 - hieu nang, thiet ke, pin va gia ban.', 'macbook air m2, apple m2, review macbook', NULL, '2026-05-08 15:05:19', '2026-05-08 15:05:19', 0);
+(1, 1, 'Top 5 Laptop Gaming Tot Nhat 2025', 'top-5-laptop-gaming-tot-nhat-2025', '<p>Noi dung chi tiet ve top 5 laptop gaming 2025...</p>', 'Top 5 Laptop Gaming 2025 | LaptopShop VN', 'Danh sach top 5 laptop gaming tot nhat nam 2025 voi hieu nang cao, tan nhiet tot.', 'laptop gaming, laptop gaming 2025, laptop choi game', NULL, '2026-05-08 15:05:19', '2026-05-08 15:05:19', 2),
+(2, 1, 'MacBook Air M2 - Co Dang Mua Khong?', 'macbook-air-m2-co-dang-mua-khong', '<p>Danh gia chi tiet MacBook Air M2...</p>', 'Review MacBook Air M2 | LaptopShop VN', 'Danh gia chi tiet MacBook Air M2 - hieu nang, thiet ke, pin va gia ban.', 'macbook air m2, apple m2, review macbook', NULL, '2026-05-08 15:05:19', '2026-05-08 15:05:19', 0),
+(3, 1, 'fhew', 'fhew', '<p>fewgweg</p>', '', '', '', '', '2026-05-11 06:39:01', NULL, 0),
+(4, 1, 'fege', 'fege', '<p>gr</p>', '', '', '', '', '2026-05-11 06:39:14', '2026-05-11 06:39:00', 2),
+(5, 1, 'hewwegg', 'hewwegg', '<p>hrh</p>', '', '', '', '', '2026-05-11 06:39:29', '2026-05-11 06:39:00', 0),
+(6, 1, 'ge', 'ge', '<p>g</p>', '', '', '', '', '2026-05-11 06:39:45', '2026-05-11 06:39:00', 0),
+(7, 1, 'gegx', 'gegx', '<p>gge</p>', '', '', '', '', '2026-05-11 06:39:58', '2026-05-11 06:39:00', 0),
+(8, 1, 'geg', 'geg', '<p>g</p>', '', '', '', '', '2026-05-11 06:40:09', NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -77,10 +83,29 @@ CREATE TABLE `article_comments` (
   `id` int(11) NOT NULL,
   `article_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `parent_id` int(11) DEFAULT NULL,
   `content` text NOT NULL,
   `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  `report_count` int(11) DEFAULT 0,
+  `is_hidden` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `article_comments`
+--
+
+INSERT INTO `article_comments` (`id`, `article_id`, `user_id`, `parent_id`, `content`, `status`, `report_count`, `is_hidden`, `created_at`) VALUES
+(3, 2, 2, NULL, 'ct', 'approved', 0, 0, '2026-05-10 19:46:14'),
+(5, 4, 5, NULL, 've', 'approved', 0, 0, '2026-05-11 06:43:03'),
+(6, 4, 5, NULL, 'fw', 'approved', 0, 0, '2026-05-11 06:43:05'),
+(7, 4, 5, NULL, 'feew', 'approved', 0, 0, '2026-05-11 06:43:08'),
+(8, 4, 5, NULL, 'egg', 'approved', 0, 0, '2026-05-11 06:43:11'),
+(9, 4, 5, NULL, 'eg', 'approved', 0, 0, '2026-05-11 06:43:16'),
+(10, 4, 5, NULL, 'egf', 'approved', 0, 0, '2026-05-11 06:43:20'),
+(11, 4, 5, NULL, 'egf', 'approved', 0, 0, '2026-05-11 06:43:20'),
+(12, 4, 5, NULL, 'fee', 'approved', 0, 0, '2026-05-11 06:43:22'),
+(13, 4, 5, NULL, 'ge', 'approved', 0, 0, '2026-05-11 06:43:24');
 
 -- --------------------------------------------------------
 
@@ -105,7 +130,8 @@ INSERT INTO `brands` (`id`, `name`, `slug`, `logo_url`, `created_at`) VALUES
 (2, 'Dell', 'dell', NULL, '2026-05-08 15:05:18'),
 (3, 'HP', 'hp', NULL, '2026-05-08 15:05:18'),
 (4, 'Apple', 'apple', NULL, '2026-05-08 15:05:18'),
-(5, 'Galaxy', 'galaxy', NULL, '2026-05-11 02:03:49');
+(5, 'Galaxy', 'galaxy', NULL, '2026-05-11 02:03:49'),
+(6, 'OnePlus 12', 'oneplus-12', NULL, '2026-05-11 05:51:38');
 
 -- --------------------------------------------------------
 
@@ -161,6 +187,24 @@ INSERT INTO `categories` (`id`, `name`, `slug`, `is_featured`, `created_at`) VAL
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `comment_reports`
+--
+
+CREATE TABLE `comment_reports` (
+  `id` int(11) NOT NULL,
+  `comment_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `reason` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `status` enum('pending','resolved','rejected') NOT NULL DEFAULT 'pending',
+  `resolved_by` int(11) DEFAULT NULL,
+  `resolved_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `contacts`
 --
 
@@ -181,7 +225,9 @@ CREATE TABLE `contacts` (
 INSERT INTO `contacts` (`id`, `customer_name`, `customer_email`, `subject`, `message`, `status`, `created_at`) VALUES
 (1, 'Khach Hang X', 'khachhangx@gmail.com', 'Hoi ve thoi gian giao hang', 'Cho minh hoi don hang giao noi thanh mat bao lau?', 'unread', '2026-05-08 15:05:19'),
 (2, 'Nguyen Thi Y', 'nty@gmail.com', 'Yeu cau xuat hoa don VAT', 'Cho toi xin hoa don VAT cho don hang DH240001.', 'replied', '2026-05-08 15:05:19'),
-(3, 'aimee', 'kim.thanthien04@hcmut.edu.vn', '', '12345678910', 'unread', '2026-05-11 02:57:20');
+(3, 'aimee', 'kim.thanthien04@hcmut.edu.vn', '', '12345678910', 'unread', '2026-05-11 02:57:20'),
+(4, '123', 'kim.thanthien04@hcmut.edu.vn', '', '123hòghjkjhgfghjk', 'unread', '2026-05-11 05:45:24'),
+(5, '73127621', 'mayyyeuktramcam123@gmail.com', '', 'dưqdwqhqừqwf', 'unread', '2026-05-11 06:26:24');
 
 -- --------------------------------------------------------
 
@@ -244,7 +290,8 @@ CREATE TABLE `members` (
 INSERT INTO `members` (`user_id`, `tier_id`, `points`) VALUES
 (2, 1, 10),
 (3, 2, 150),
-(4, 3, 620);
+(4, 3, 620),
+(5, 1, 0);
 
 -- --------------------------------------------------------
 
@@ -295,7 +342,9 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`id`, `user_id`, `order_code`, `shipping_address`, `total_amount`, `discount_amount`, `final_amount`, `payment_method`, `payment_status`, `status`, `created_at`, `updated_at`) VALUES
-(5, 2, 'ORD-2BD46BFA', '12', 1200000.00, 0.00, 1230000.00, 'cod', 'unpaid', 'pending', '2026-05-11 02:45:17', '2026-05-11 02:45:17');
+(5, 2, 'ORD-2BD46BFA', '12', 1200000.00, 0.00, 1230000.00, 'cod', 'unpaid', 'pending', '2026-05-11 02:45:17', '2026-05-11 02:45:17'),
+(6, 5, 'ORD-295BF875', '1', 1200000.00, 0.00, 1230000.00, 'credit_card', 'unpaid', 'pending', '2026-05-11 06:09:25', '2026-05-11 06:09:25'),
+(7, 5, 'ORD-77A2ACFB', '1', 56000000.00, 0.00, 56000000.00, 'cod', 'unpaid', 'pending', '2026-05-11 06:30:18', '2026-05-11 06:30:18');
 
 -- --------------------------------------------------------
 
@@ -317,7 +366,9 @@ CREATE TABLE `order_items` (
 --
 
 INSERT INTO `order_items` (`id`, `order_id`, `variant_id`, `quantity`, `unit_price`, `total_price`) VALUES
-(1, 5, 5, 1, 1200000.00, 1200000.00);
+(1, 5, 5, 1, 1200000.00, 1200000.00),
+(2, 6, 7, 1, 1200000.00, 1200000.00),
+(3, 7, 4, 2, 28000000.00, 56000000.00);
 
 -- --------------------------------------------------------
 
@@ -346,7 +397,9 @@ INSERT INTO `products` (`id`, `category_id`, `brand_id`, `name`, `slug`, `short_
 (1, 5, 1, 'Asus ROG Strix G15', 'asus-rog-strix-g15', '', '', 1, '2026-05-08 15:05:18', '2026-05-11 02:04:22'),
 (2, 2, 2, 'Dell Inspiron 15', 'dell-inspiron-15', 'Laptop van phong ben bi', NULL, 1, '2026-05-08 15:05:18', '2026-05-08 15:05:18'),
 (3, 4, 4, 'MacBook Air M2', 'macbook-air-m2', 'Sieu mong nhe, hieu nang manh', NULL, 1, '2026-05-08 15:05:18', '2026-05-08 15:05:18'),
-(4, 6, 5, 'Galaxy A17', 'galaxy-a17', '', '', 0, '2026-05-11 02:03:49', '2026-05-11 02:32:45');
+(4, 6, 5, 'Galaxy A17', 'galaxy-a17', '', '', 0, '2026-05-11 02:03:49', '2026-05-11 02:32:45'),
+(5, 6, 6, 'OnePlus 12', 'oneplus-12', '', '', 0, '2026-05-11 05:51:38', '2026-05-11 05:51:38'),
+(6, 6, 5, 'iPhone 16 Pro', 'iphone-16-pro', '', '', 0, '2026-05-11 05:52:20', '2026-05-11 05:52:51');
 
 -- --------------------------------------------------------
 
@@ -375,19 +428,9 @@ INSERT INTO `product_variants` (`id`, `product_id`, `sku_code`, `ram`, `color`, 
 (2, 1, 'ROG-G15-16GB-BLK', '16GB', 'Black', '512GB SSD', 5, 27500000.00, 'assets/img/products/Asus ROG Strix G15.jpg'),
 (3, 2, 'DELL-INS-8GB-SIL', '8GB', 'Silver', '256GB SSD', 20, 15000000.00, 'assets/img/products/Dell Inspiron 15.jpg'),
 (4, 3, 'MAC-M2-8GB-MID', '8GB', 'Midnight', '256GB SSD', 8, 28000000.00, 'assets/img/products/MacBook Air M2.jpg'),
-(5, 4, 'SKU-00004-1778465029', '6GB', NULL, '64GB', 17, 1200000.00, 'assets/img/products/product_6a01390579e4d.jpg');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `qna`
---
-
-CREATE TABLE `qna` (
-  `id` int(11) NOT NULL,
-  `question` text NOT NULL,
-  `answer` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+(5, 4, 'SKU-00004-1778465029', '6GB', NULL, '64GB', 17, 1200000.00, 'assets/img/products/product_6a01390579e4d.jpg'),
+(6, 5, 'SKU-00005-1778478698', '', NULL, '64GB', 14, 1200000.00, 'assets/img/products/product_6a016e6a72213.png'),
+(7, 6, 'SKU-00006-1778478740', '', NULL, '64GB', 11, 1200000.00, 'assets/img/products/product_6a016e94da26e.png');
 
 -- --------------------------------------------------------
 
@@ -450,10 +493,20 @@ INSERT INTO `site_settings` (`key`, `value`, `updated_at`) VALUES
 ('about.vision_title', 'Our Vision', '2026-05-10 11:00:25'),
 ('address', '123 Duong Cong Nghe, Quan 1, TP.HCM', '2026-05-08 15:05:18'),
 ('company_name', 'LaptopShop VN', '2026-05-08 15:05:18'),
+('contact.address', '', '2026-05-11 05:45:55'),
+('contact.email', '', '2026-05-11 05:45:55'),
+('contact.page_subtitle', '368712783128', '2026-05-11 06:25:57'),
+('contact.page_title', 'Trang Liên Hệ', '2026-05-11 05:46:22'),
+('contact.phone', '', '2026-05-11 05:45:55'),
+('contact.working_hours', '', '2026-05-11 05:45:55'),
 ('email', 'contact@laptopshop.vn', '2026-05-08 15:05:18'),
 ('general.site_description', '', '2026-05-10 10:13:44'),
+('general.site_logo', 'assets/img/logo.png', '2026-05-11 05:47:20'),
 ('general.site_name', 'LaptopShop', '2026-05-10 10:13:44'),
 ('general.site_tagline', 'Your Trusted Phone Partner', '2026-05-10 10:13:44'),
+('home.banner_1_image', 'assets/img/banner-1.JPG', '2026-05-11 03:48:31'),
+('home.banner_2_image', 'assets/img/banner-2.jpg', '2026-05-11 03:48:31'),
+('home.banner_3_image', 'assets/img/banner-3.JPG', '2026-05-11 03:59:40'),
 ('homepage_banner_1', '/uploads/settings/banner1.jpg', '2026-05-08 15:05:18'),
 ('homepage_banner_2', '/uploads/settings/banner2.jpg', '2026-05-08 15:05:18'),
 ('homepage_intro_text', 'Chung toi chuyen cung cap cac dong laptop chinh hang, gia canh tranh voi dich vu hau mai tot nhat thi truong.', '2026-05-08 15:05:18'),
@@ -488,7 +541,8 @@ INSERT INTO `users` (`id`, `fullname`, `email`, `phone`, `password_hash`, `avata
 (1, 'Super Admin', 'admin@laptop.vn', '0901234567', '$2y$10$nGmmkhAr/YzdE25rN6NjGOOX9.SP0VcsdOrHudf3syYuXpmXvS11e', NULL, 1, '2026-05-08 15:05:18', '2026-05-08 15:05:18'),
 (2, 'Nguyen Van A', 'nva@gmail.com', '0912345678', '$2y$10$nGmmkhAr/YzdE25rN6NjGOOX9.SP0VcsdOrHudf3syYuXpmXvS11e', NULL, 1, '2026-05-08 15:05:18', '2026-05-08 15:05:18'),
 (3, 'Tran Thi B', 'ttb@gmail.com', '0923456789', '$2y$10$nGmmkhAr/YzdE25rN6NjGOOX9.SP0VcsdOrHudf3syYuXpmXvS11e', NULL, 1, '2026-05-08 15:05:18', '2026-05-08 15:05:18'),
-(4, 'Le Van C', 'lvc@gmail.com', '0934567890', '$2y$10$nGmmkhAr/YzdE25rN6NjGOOX9.SP0VcsdOrHudf3syYuXpmXvS11e', NULL, 0, '2026-05-08 15:05:18', '2026-05-08 15:05:18');
+(4, 'Le Van C', 'lvc@gmail.com', '0934567890', '$2y$10$nGmmkhAr/YzdE25rN6NjGOOX9.SP0VcsdOrHudf3syYuXpmXvS11e', NULL, 0, '2026-05-08 15:05:18', '2026-05-08 15:05:18'),
+(5, 'tk', 'tk', NULL, '$2y$10$3U/GXCO4dRFpDI9JJ2mEu.zJQfRYOD/RUQg7hnZcfHNKXeusO5hh2', NULL, 1, '2026-05-11 06:08:54', '2026-05-11 06:08:54');
 
 --
 -- Indexes for dumped tables
@@ -514,7 +568,8 @@ ALTER TABLE `articles`
 ALTER TABLE `article_comments`
   ADD PRIMARY KEY (`id`),
   ADD KEY `article_id` (`article_id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `parent_id` (`parent_id`);
 
 --
 -- Indexes for table `brands`
@@ -543,6 +598,15 @@ ALTER TABLE `cart_items`
 ALTER TABLE `categories`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `slug` (`slug`);
+
+--
+-- Indexes for table `comment_reports`
+--
+ALTER TABLE `comment_reports`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `comment_id` (`comment_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `resolved_by` (`resolved_by`);
 
 --
 -- Indexes for table `contacts`
@@ -610,12 +674,6 @@ ALTER TABLE `product_variants`
   ADD KEY `product_id` (`product_id`);
 
 --
--- Indexes for table `qna`
---
-ALTER TABLE `qna`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `reviews`
 --
 ALTER TABLE `reviews`
@@ -644,19 +702,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `articles`
 --
 ALTER TABLE `articles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `article_comments`
 --
 ALTER TABLE `article_comments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `brands`
 --
 ALTER TABLE `brands`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `carts`
@@ -671,10 +729,16 @@ ALTER TABLE `categories`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
+-- AUTO_INCREMENT for table `comment_reports`
+--
+ALTER TABLE `comment_reports`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `contacts`
 --
 ALTER TABLE `contacts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `coupons`
@@ -686,7 +750,7 @@ ALTER TABLE `coupons`
 -- AUTO_INCREMENT for table `faqs`
 --
 ALTER TABLE `faqs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `membership_tiers`
@@ -698,31 +762,25 @@ ALTER TABLE `membership_tiers`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `product_variants`
 --
 ALTER TABLE `product_variants`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT for table `qna`
---
-ALTER TABLE `qna`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `reviews`
@@ -734,7 +792,7 @@ ALTER TABLE `reviews`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables
@@ -757,7 +815,36 @@ ALTER TABLE `articles`
 --
 ALTER TABLE `article_comments`
   ADD CONSTRAINT `article_comments_ibfk_1` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `article_comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `members` (`user_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `article_comments_ibfk_10` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_11` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_12` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_13` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_14` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_15` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_16` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_17` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_18` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_19` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `members` (`user_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_20` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_21` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_22` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_23` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_24` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_25` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_26` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_27` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_28` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_29` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_30` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_31` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_4` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_5` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_6` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_7` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_8` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `article_comments_ibfk_9` FOREIGN KEY (`parent_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `carts`
@@ -771,6 +858,14 @@ ALTER TABLE `carts`
 ALTER TABLE `cart_items`
   ADD CONSTRAINT `cart_items_ibfk_1` FOREIGN KEY (`cart_id`) REFERENCES `carts` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `cart_items_ibfk_2` FOREIGN KEY (`variant_id`) REFERENCES `product_variants` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `comment_reports`
+--
+ALTER TABLE `comment_reports`
+  ADD CONSTRAINT `comment_reports_ibfk_1` FOREIGN KEY (`comment_id`) REFERENCES `article_comments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `comment_reports_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `comment_reports_ibfk_3` FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `members`
