@@ -1,3 +1,4 @@
+            </div> <!-- main-content-inner end -->
         </div> <!-- main-content end -->
         
         <!-- footer area start-->

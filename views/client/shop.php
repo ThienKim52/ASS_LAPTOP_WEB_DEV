@@ -24,7 +24,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
                     CÔNG NGHỆ HÀNG ĐẦU
                 </div>
 
-                <img src="/LaptopWeb-articles/FE/assets/img/products/product_1.webp"
+                <img src="/LAPTOP_WEB_DEV-main/assets/img/products/product_1.webp"
      class="banner-image"
      alt="Laptop Banner">
                 </div>

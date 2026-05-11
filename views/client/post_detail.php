@@ -1,4 +1,5 @@
 <?php
+// views/client/post_detail.php
 require_once 'helpers/settings_helper.php';
 ?>
 <!DOCTYPE html>
@@ -8,109 +9,195 @@ require_once 'helpers/settings_helper.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><?php echo htmlspecialchars($post['title']); ?> - <?php echo htmlspecialchars(getSetting('general.site_name', 'PhoneStore')); ?></title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; }
+        .article-header { padding: 60px 0 40px; background: white; border-bottom: 1px solid #eee; }
+        .article-title { font-size: 2.5rem; font-weight: 800; line-height: 1.2; margin-bottom: 20px; }
+        .article-meta { color: #6c757d; font-size: 0.95rem; display: flex; align-items: center; gap: 20px; }
+        .article-thumbnail { width: 100%; max-height: 500px; object-fit: cover; border-radius: 20px; margin: 40px 0; }
+        .article-content { font-size: 1.1rem; line-height: 1.8; color: #333; }
+        .article-content p { margin-bottom: 25px; }
+        .article-content img { max-width: 100%; border-radius: 15px; margin: 20px 0; }
+        
+        .comment-section { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-top: 60px; }
+        .comment-form textarea { border-radius: 15px; padding: 15px; border: 1px solid #eee; background: #fdfdfd; }
+        .comment-form textarea:focus { border-color: #0d6efd; box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.1); }
+        
+        .comment-item { padding: 25px 0; border-bottom: 1px solid #f1f1f1; }
+        .comment-item:last-child { border-bottom: none; }
+        .comment-avatar { width: 45px; height: 45px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #999; }
+        .comment-author { font-weight: 700; font-size: 1rem; margin-bottom: 2px; }
+        .comment-date { font-size: 0.85rem; color: #adb5bd; }
+        .comment-text { margin-top: 10px; color: #495057; line-height: 1.6; }
+        .comment-actions { margin-top: 10px; display: flex; gap: 15px; font-size: 0.85rem; }
+        .comment-actions a { color: #6c757d; text-decoration: none; cursor: pointer; }
+        .comment-actions a:hover { color: #0d6efd; }
+        
+        .sidebar-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .related-item { display: flex; gap: 15px; margin-bottom: 20px; text-decoration: none; color: inherit; transition: opacity 0.2s; }
+        .related-item:hover { opacity: 0.8; }
+        .related-img { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+        .related-title { font-weight: 600; font-size: 0.95rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
 </head>
 <body>
     <?php include 'views/layouts/header.php'; ?>
     
-    <section class="post-detail-section">
-        <div class="container-default">
-            <div class="post-detail-layout">
-                
-                <!-- Left side: Post content -->
-                <article class="post-detail-content">
-                    <!-- Thumbnail -->
-                    <?php if ($post['image']): ?>
-                    <div class="post-detail-thumbnail">
-                        <img src="assets/img/posts/<?php echo htmlspecialchars($post['image']); ?>" alt="<?php echo htmlspecialchars($post['title']); ?>" onerror="this.src='assets/img/placeholder.png'" />
-                    </div>
+    <header class="article-header">
+        <div class="container">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="index.php">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a href="?page=post">Tin tức</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Bài viết</li>
+                </ol>
+            </nav>
+            <h1 class="article-title"><?php echo htmlspecialchars($post['title']); ?></h1>
+            <div class="article-meta">
+                <span><i class="bi bi-person me-2"></i><?php echo htmlspecialchars($post['author_name'] ?? 'Admin'); ?></span>
+                <span><i class="bi bi-calendar3 me-2"></i><?php echo date('d/m/Y', strtotime($post['published_at'] ?? $post['created_at'])); ?></span>
+                <span><i class="bi bi-eye me-2"></i><?php echo number_format($post['view_count'] ?? 0); ?> lượt xem</span>
+                <span><i class="bi bi-chat-dots me-2"></i><span id="commentCount">0</span> bình luận</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-8">
+                <article>
+                    <?php if(!empty($post['thumbnail_url'])): ?>
+                        <img src="<?php echo htmlspecialchars($post['thumbnail_url']); ?>" class="article-thumbnail" alt="<?php echo htmlspecialchars($post['title']); ?>" onerror="this.onerror=null; this.src='assets/img/placeholder.png'">
                     <?php endif; ?>
                     
-                    <!-- Post meta info -->
-                    <div class="post-detail-meta">
-                        <span class="meta-author">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
-                            </svg>
-                            <?php echo htmlspecialchars($post['author_name']); ?>
-                        </span>
-                        <span class="meta-date">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
-                            </svg>
-                            <?php 
-                            $date = new DateTime($post['created_at']);
-                            echo $date->format('d/m/Y H:i');
-                            ?>
-                        </span>
-                        <span class="meta-views">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
-                                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
-                            </svg>
-                            <?php echo number_format($post['view_count'] + 1); ?> lượt xem
-                        </span>
-                        <?php if ($post['category_name']): ?>
-                        <span class="meta-category" style="background-color: <?php echo htmlspecialchars($post['category_color'] ?? '#3B82F6'); ?>">
-                            <?php echo htmlspecialchars($post['category_name']); ?>
-                        </span>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <!-- Post title -->
-                    <h1 class="post-detail-title"><?php echo htmlspecialchars($post['title']); ?></h1>
-                    
-                    <!-- Post content -->
-                    <div class="post-detail-body">
+                    <div class="article-content">
                         <?php echo $post['content']; ?>
                     </div>
                 </article>
-                
-                <!-- Right side: Related posts -->
-                <aside class="post-detail-sidebar">
-                    <div class="related-posts-container">
-                        <h3 class="related-posts-title">Bài viết liên quan</h3>
-                        
-                        <?php if (!empty($relatedPosts)): ?>
-                        <div class="related-posts-list">
-                            <?php foreach ($relatedPosts as $related): ?>
-                            <a href="?page=post_detail&id=<?php echo $related['id']; ?>" class="related-post-item">
-                                <?php if ($related['image']): ?>
-                                <div class="related-post-thumbnail">
-                                    <img src="assets/img/posts/<?php echo htmlspecialchars($related['image']); ?>" alt="<?php echo htmlspecialchars($related['title']); ?>" onerror="this.src='assets/img/placeholder.png'" />
+
+                <!-- Share -->
+                <div class="d-flex align-items-center gap-3 py-4 border-top border-bottom my-5">
+                    <span class="fw-bold">Chia sẻ bài viết:</span>
+                    <a href="#" class="btn btn-outline-primary btn-sm rounded-circle"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="btn btn-outline-info btn-sm rounded-circle text-info"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle"><i class="bi bi-link-45deg"></i></a>
+                </div>
+
+                <!-- Comments -->
+                <div class="comment-section">
+                    <h3 class="mb-4 fw-bold">Bình luận (<span id="commentCount2">0</span>)</h3>
+                    
+                    <div class="comment-form mb-5">
+                        <?php if(isset($_SESSION['user_id'])): ?>
+                            <form id="commentForm">
+                                <input type="hidden" name="article_id" value="<?php echo $post['id']; ?>">
+                                <div class="mb-3">
+                                    <textarea name="content" class="form-control" rows="4" placeholder="Chia sẻ suy nghĩ của bạn về bài viết này..." required></textarea>
                                 </div>
-                                <?php endif; ?>
-                                <div class="related-post-info">
-                                    <h4 class="related-post-title"><?php echo htmlspecialchars($related['title']); ?></h4>
-                                    <div class="related-post-meta">
-                                        <span class="related-post-date">
-                                            <?php 
-                                            $relatedDate = new DateTime($related['created_at']);
-                                            echo $relatedDate->format('d/m/Y');
-                                            ?>
-                                        </span>
-                                        <span class="related-post-views">
-                                            👁 <?php echo number_format($related['view_count']); ?>
-                                        </span>
-                                    </div>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary px-4 py-2 fw-bold">
+                                        <i class="bi bi-send me-2"></i>Gửi bình luận
+                                    </button>
                                 </div>
-                            </a>
-                            <?php endforeach; ?>
-                        </div>
+                            </form>
                         <?php else: ?>
-                        <p class="no-related-posts">Không có bài viết liên quan</p>
+                            <div class="alert alert-light border text-center py-4 rounded-4">
+                                <p class="mb-3">Vui lòng đăng nhập để gửi bình luận.</p>
+                                <a href="?page=login_signup" class="btn btn-primary px-4">Đăng nhập ngay</a>
+                            </div>
                         <?php endif; ?>
                     </div>
-                </aside>
-                
+
+                    <div id="commentsList">
+                        <!-- Loaded via AJAX -->
+                    </div>
+                    
+                    <div id="commentsPagination" class="mt-4"></div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="sidebar-card">
+                    <h5 class="fw-bold mb-4">Bài viết liên quan</h5>
+                    <div id="relatedArticles">
+                        <?php if (!empty($relatedPosts)): ?>
+                            <?php foreach($relatedPosts as $r): ?>
+                                <a href="?page=post_detail&id=<?php echo $r['id']; ?>" class="related-item">
+                                    <img src="<?php echo !empty($r['thumbnail_url']) ? htmlspecialchars($r['thumbnail_url']) : 'assets/img/placeholder.png'; ?>" class="related-img" alt="" onerror="this.onerror=null; this.src='assets/img/placeholder.png'">
+                                    <div>
+                                        <div class="related-title"><?php echo htmlspecialchars($r['title']); ?></div>
+                                        <small class="text-muted"><?php echo date('d/m/Y', strtotime($r['published_at'] ?? $r['created_at'])); ?></small>
+                                    </div>
+                                </a>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p class="text-muted small">Không có bài viết liên quan.</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h5 class="fw-bold mb-4">Tìm kiếm</h5>
+                    <form action="index.php" method="GET">
+                        <input type="hidden" name="page" value="post">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control border-end-0" placeholder="Tìm bài viết...">
+                            <button class="btn btn-outline-primary border-start-0" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </section>
-    
+    </div>
+
+    <!-- Report Modal -->
+    <div class="modal fade" id="reportModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Báo cáo bình luận</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="reportForm">
+                        <input type="hidden" name="comment_id" id="reportCommentId">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Lý do báo cáo</label>
+                            <select name="reason" class="form-select" required>
+                                <option value="spam">Spam / Quảng cáo</option>
+                                <option value="inappropriate">Nội dung không phù hợp</option>
+                                <option value="offensive">Xúc phạm / Công kích</option>
+                                <option value="other">Lý do khác</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Mô tả thêm (tùy chọn)</label>
+                            <textarea name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-danger px-4">Gửi báo cáo</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php include 'views/layouts/footer.php'; ?>
     
+    <script>
+        window.ARTICLE_ID = <?php echo $post['id']; ?>;
+        window.CURRENT_USER_ID = <?php echo $_SESSION['user_id'] ?? 'null'; ?>;
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/javascript/post_detail.js"></script>
 </body>
 </html>

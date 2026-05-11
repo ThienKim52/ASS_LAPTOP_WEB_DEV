@@ -1,3 +1,4 @@
+
 // Post page functionality - Lazy loading and filtering
 
 let currentPage = 1;
@@ -230,3 +231,4 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+

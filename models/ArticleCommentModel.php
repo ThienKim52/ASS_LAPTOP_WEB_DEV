@@ -5,6 +5,42 @@ require_once __DIR__ . '/BaseModel.php';
 
 class ArticleCommentModel extends BaseModel {
 
+    public function __construct() {
+        parent::__construct();
+        $this->ensureTablesAndColumns();
+    }
+
+    /**
+     * Ensure necessary tables and columns exist for comments and reports.
+     */
+    private function ensureTablesAndColumns() {
+        // Create comment_reports table if it doesn't exist
+        $this->db->exec("CREATE TABLE IF NOT EXISTS comment_reports (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            comment_id INT NOT NULL,
+            user_id INT NOT NULL,
+            reason VARCHAR(100) NOT NULL,
+            description TEXT NULL,
+            status ENUM('pending','resolved','rejected') NOT NULL DEFAULT 'pending',
+            resolved_by INT NULL,
+            resolved_at TIMESTAMP NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (comment_id) REFERENCES article_comments(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (resolved_by) REFERENCES users(id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        // Add report_count and is_hidden to article_comments if they don't exist
+        try {
+            $this->db->exec("ALTER TABLE article_comments ADD COLUMN IF NOT EXISTS report_count INT DEFAULT 0");
+            $this->db->exec("ALTER TABLE article_comments ADD COLUMN IF NOT EXISTS is_hidden TINYINT(1) DEFAULT 0");
+            $this->db->exec("ALTER TABLE article_comments ADD COLUMN IF NOT EXISTS parent_id INT NULL DEFAULT NULL, ADD FOREIGN KEY IF NOT EXISTS (parent_id) REFERENCES article_comments(id) ON DELETE CASCADE");
+        } catch (PDOException $e) {
+            // Some MySQL versions don't support ADD COLUMN IF NOT EXISTS
+            // Silently fail if they already exist
+        }
+    }
+
     /**
      * Get approved comments for an article.
      */

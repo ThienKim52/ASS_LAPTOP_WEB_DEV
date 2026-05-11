@@ -1,8 +1,7 @@
 <?php
 // views/admin/manage_article_comments.php
 include 'views/layouts/admin_header.php';
-require_once 'models/ArticleCommentModel.php';
-$commentModel = new ArticleCommentModel();
+require_once 'config/db.php';
 $pdo = Database::getConnection();
 
 // Get reported comments count
