@@ -1,30 +1,21 @@
 <?php
 header('Content-Type: application/json');
+require_once __DIR__ . '/../models/PostModel.php';
 
-require_once '../models/PostModel.php';
+$postModel = new PostModel();
 
-$postModel = new PostModel(); // auto-connects via BaseModel
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 6;
+$search = isset($_GET['search']) ? $_GET['search'] : '';
 
-// Get parameters
-$page       = isset($_GET['page']) ? intval($_GET['page']) : 1;
-$limit      = isset($_GET['limit']) ? intval($_GET['limit']) : 3;
-$categoryId = isset($_GET['category']) ? intval($_GET['category']) : null;
-$search     = isset($_GET['search']) ? trim($_GET['search']) : '';
-
-// Get posts
-$posts = $postModel->getPosts($page, $limit, $categoryId, $search);
-
-// Get total count
-$totalPosts = $postModel->countPosts($categoryId, $search);
-
-// Calculate if there are more posts
-$offset  = ($page - 1) * $limit;
-$hasMore = ($offset + $limit) < $totalPosts;
+$posts = $postModel->getPosts($page, $limit, null, $search);
+$total = $postModel->countPosts(null, $search);
 
 echo json_encode([
-    'success' => true,
-    'posts'   => $posts,
-    'hasMore' => $hasMore,
-    'total'   => $totalPosts,
-    'page'    => $page
+    'items' => $posts,
+    'total' => $total,
+    'page' => $page,
+    'limit' => $limit,
+    'total_pages' => ($limit > 0) ? ceil($total / $limit) : 0
 ]);
+?>

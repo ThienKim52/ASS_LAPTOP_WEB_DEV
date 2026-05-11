@@ -147,8 +147,9 @@ $siteLogo = getImageUrl($logoPath);
                             ['src' => 'assets/img/icons/icon-homepage-promotions.svg', 'text' => 'Khuyến mãi'],
                             ['src' => 'assets/img/icons/icon-homepage-tech-news.svg', 'text' => 'Tin công nghệ']
                         ];
-                        foreach ($headerCats as $c): ?>
-                            <a href="index.php?page=shop" class="category-item">
+                        foreach ($headerCats as $c): 
+                            $href = ($c['text'] === 'Tin công nghệ') ? 'index.php?page=post' : 'index.php?page=shop'; ?>
+                            <a href="<?= $href ?>" class="category-item">
                                 <img src="<?= $c['src'] ?>" width="24" height="24" alt="">
                                 <span><?= $c['text'] ?></span>
                                 <i class="bi bi-chevron-right"></i>
@@ -368,8 +369,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-<script src="assets/javascript/cart.js"></script>
 
 <!-- Logout confirmation script -->
 <script>
