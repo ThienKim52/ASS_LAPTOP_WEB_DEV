@@ -127,15 +127,15 @@ class ShoppingCart {
             const data = await response.json();
             
             if (data.success) {
-                // Update badge
-                this.cartBadge.textContent = data.itemCount;
-                this.cartItemCount.textContent = `${data.itemCount} items`;
+                // Update badge (only if elements exist)
+                if (this.cartBadge) this.cartBadge.textContent = data.itemCount;
+                if (this.cartItemCount) this.cartItemCount.textContent = `${data.itemCount} items`;
                 
-                // Update total
-                this.cartTotalAmount.textContent = `${this.formatNumber(data.total)}`;
+                // Update total (only if element exists)
+                if (this.cartTotalAmount) this.cartTotalAmount.textContent = `${this.formatNumber(data.total)}`;
                 
-                // Render cart items
-                this.renderMiniCartItems(data.cart);
+                // Render cart items (only if element exists)
+                if (this.cartDropdownBody) this.renderMiniCartItems(data.cart);
             }
         } catch (error) {
             console.error('Error updating cart:', error);
