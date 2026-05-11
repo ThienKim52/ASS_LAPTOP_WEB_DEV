@@ -5,7 +5,6 @@ include 'views/layouts/header.php';
 // Cart items from session
 $cartItems = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 
-// ✅ Tính total MANUALLY (reliable)
 $cartTotal = 0;
 $itemCount = 0;
 
@@ -18,24 +17,20 @@ foreach ($cartItems as $productId => $item) {
     $cartTotal += $subtotal;
     $itemCount += $quantity;
     
-    // ✅ Thêm subtotal vào item để dùng trong view
     $cartItems[$productId]['subtotal'] = $subtotal;
 }
+
+// Calculate discount if coupon is applied
+$discountAmount = 0;
+$appliedCoupon = isset($_SESSION['applied_coupon']) ? $_SESSION['applied_coupon'] : null;
+if ($appliedCoupon) {
+    $discountPercent = floatval($appliedCoupon['discount_percent']);
+    $discountAmount = $cartTotal * ($discountPercent / 100);
+}
+$finalTotal = $cartTotal - $discountAmount;
 ?>
 
-<!-- Hero Section -->
-<div class="page-hero text-center">
-    <div class="container">
-        <h1 class="hero-title">Cart</h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb justify-content-center">
-                <li class="breadcrumb-item"><a href="?page=home">Home</a></li>
-                <li class="breadcrumb-item"><a href="?page=shop">Shop</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Cart</li>
-            </ol>
-        </nav>
-    </div>
-</div>
+
 
 <!-- Cart Content -->
 <section class="cart-section py-5">
@@ -45,10 +40,10 @@ foreach ($cartItems as $productId => $item) {
             <!-- Empty Cart Message -->
             <div class="empty-cart-container text-center py-5">
                 <i class="bi bi-cart-x" style="font-size: 5rem; color: #ccc;"></i>
-                <h3 class="mt-4 mb-3">Your cart is empty</h3>
-                <p class="text-muted mb-4">Add some products to get started!</p>
-                <a href="?page=shop" class="btn btn-primary btn-lg">
-                    <i class="bi bi-arrow-left"></i> Continue Shopping
+                <h3 class="mt-4 mb-3">Giỏ hàng của bạn đang trống</h3>
+                <p class="text-muted mb-4">Thêm sản phẩm vào giỏ để bắt đầu mua sắm!</p>
+                <a href="?page=shop" class="btn btn-danger btn-lg">
+                    <i class="bi bi-arrow-left"></i> Tiếp tục mua sắm
                 </a>
             </div>
         
@@ -58,10 +53,9 @@ foreach ($cartItems as $productId => $item) {
                 <!-- Cart Items (Left Column) -->
                 <div class="col-lg-8 mb-4">
                     <div class="card shadow-sm">
-                        <div class="card-header bg-primary text-white">
+                        <div class="card-header bg-danger text-white">
                             <h5 class="mb-0">
-                                <i class="bi bi-cart3"></i> Shopping Cart 
-                                <span class="badge bg-light text-dark ms-2"><?= $itemCount ?> items</span>
+                                <i class="bi bi-cart3"></i> Giỏ hàng 
                             </h5>
                         </div>
                         <div class="card-body p-0">
@@ -69,10 +63,10 @@ foreach ($cartItems as $productId => $item) {
                                 <table class="table table-hover mb-0">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>Product</th>
-                                            <th>Price</th>
-                                            <th style="width: 150px;">Quantity</th>
-                                            <th>Subtotal</th>
+                                            <th>Sản phẩm</th>
+                                            <th>Giá</th>
+                                            <th style="width: 150px;">Số lượng</th>
+                                            <th>Tạm tính</th>
                                             <th style="width: 50px;"></th>
                                         </tr>
                                     </thead>
@@ -83,9 +77,13 @@ foreach ($cartItems as $productId => $item) {
                                                 <td>
                                                     <div class="d-flex align-items-center">
                                                         <?php 
-                                                            $imgUrl = (strpos($item['image'], 'http') === 0) 
-                                                                ? $item['image'] 
-                                                                : 'assets/img/' . $item['image']; 
+                                                            // Determine image URL
+                                                            $imgUrl = !empty($item['image']) ? htmlspecialchars($item['image']) : 'assets/img/placeholder.png';
+                                                            // Try to validate if image file exists
+                                                            $imagePath = __DIR__ . '/../../' . ltrim($imgUrl, '/');
+                                                            if (!file_exists($imagePath)) {
+                                                                $imgUrl = 'assets/img/placeholder.png';
+                                                            }
                                                         ?>
                                                         <img src="<?= htmlspecialchars($imgUrl) ?>" 
                                                              alt="<?= htmlspecialchars($item['name']) ?>" 
@@ -102,7 +100,7 @@ foreach ($cartItems as $productId => $item) {
                                                                 <?= htmlspecialchars($item['category']) ?>
                                                             </small>
                                                             <?php if (!empty($item['brand'])): ?>
-                                                                <br><small class="text-muted">Brand: <?= htmlspecialchars($item['brand']) ?></small>
+                                                                <br><small class="text-muted">Thương hiệu: <?= htmlspecialchars($item['brand']) ?></small>
                                                             <?php endif; ?>
                                                         </div>
                                                     </div>
@@ -135,7 +133,7 @@ foreach ($cartItems as $productId => $item) {
                                                             <i class="bi bi-plus"></i>
                                                         </button>
                                                     </div>
-                                                    <small class="text-muted">Stock: <?= $item['stock'] ?></small>
+                                                    <small class="text-muted">Còn hàng: <?= $item['stock'] ?></small>
                                                 </td>
                                                 
                                                 <!-- Subtotal -->
@@ -149,7 +147,7 @@ foreach ($cartItems as $productId => $item) {
                                                 <td class="align-middle">
                                                     <button class="btn btn-sm btn-danger btn-remove" 
                                                             data-product-id="<?= $productId ?>"
-                                                            title="Remove">
+                                                            title="Xóa">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 </td>
@@ -163,72 +161,69 @@ foreach ($cartItems as $productId => $item) {
                     
                     <!-- Action Buttons -->
                     <div class="mt-3 d-flex justify-content-between">
-                        <a href="?page=shop" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left"></i> Continue Shopping
+                        <a href="?page=shop" class="btn btn-outline-danger">
+                            <i class="bi bi-arrow-left"></i> Tiếp tục mua sắm
                         </a>
-                        <button class="btn btn-outline-danger" id="clearCartBtn">
-                            <i class="bi bi-trash"></i> Clear Cart
+                        <button class="btn btn-danger" id="clearCartBtn">
+                            <i class="bi bi-trash"></i> Xóa Giỏ hàng
                         </button>
                     </div>
                 </div>
                 
                 <!-- Cart Totals (Right Column) -->
                 <div class="col-lg-4">
-                    <div class="card shadow-sm sticky-top" style="position: sticky; top: 100px; z-index: 500; max-height: calc(100vh - 120px); overflow-y: auto;">
-                        <div class="card-header bg-white">
-                            <h5 class="mb-0">Cart Totals</h5>
+                    <div class="card shadow-sm sticky-top cart-summary-card" style="position: sticky; top: 100px; z-index: 500; max-height: calc(100vh - 120px); overflow-y: auto;">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">Tổng đơn hàng</h5>
                         </div>
                         <div class="card-body">
-                            <!-- ✅ SUBTOTAL -->
                             <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
-                                <span>Subtotal:</span>
+                                <span>Tạm tính:</span>
                                 <strong id="cartSubtotal"><?= number_format($cartTotal, 0, ',', '.') ?>đ</strong>
                             </div>
                             
                             <!-- Shipping -->
                             <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
-                                <span>Shipping:</span>
-                                <span class="text-success">Free</span>
+                                <span>Phí vận chuyển:</span>
+                                <span class="text-success">Miễn phí</span>
                             </div>
+                            
+                            <!-- Discount -->
+                            <?php if ($appliedCoupon): ?>
+                            <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                                <span>Mã giảm giá (<?= htmlspecialchars($appliedCoupon['code']) ?> - <?= $appliedCoupon['discount_percent'] ?>%):</span>
+                                <span class="text-success">-<?= number_format($discountAmount, 0, ',', '.') ?>đ</span>
+                            </div>
+                            <?php endif; ?>
                             
                             <!-- Tax -->
                             <div class="d-flex justify-content-between mb-4 pb-3 border-bottom">
-                                <span>Tax (0%):</span>
+                                <span>Thuế (0%):</span>
                                 <span>0đ</span>
                             </div>
                             
-                            <!-- ✅ TOTAL -->
                             <div class="d-flex justify-content-between mb-4">
-                                <h5 class="mb-0">Total:</h5>
-                                <h5 class="text-primary mb-0" id="cartTotal">
-                                    <?= number_format($cartTotal, 0, ',', '.') ?>đ
+                                <h5 class="mb-0">Tổng cộng:</h5>
+                                <h5 class="text-danger mb-0" id="cartTotal">
+                                    <?= number_format($finalTotal, 0, ',', '.') ?>đ
                                 </h5>
                             </div>
                             
                             <!-- Checkout Button -->
                             <div class="d-grid gap-2">
-                                <a href="?page=checkout" class="btn btn-primary btn-lg">
-                                    <i class="bi bi-credit-card"></i> Proceed to Checkout
+                                <a href="?page=checkout" class="btn btn-danger btn-lg">
+                                    <i class="bi bi-credit-card"></i> Tiến hành thanh toán
                                 </a>
                             </div>
                             
-                            <!-- Coupon Code (Optional) -->
-                            <div class="mt-4">
-                                <label class="form-label small">Have a coupon?</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="text" class="form-control" placeholder="Coupon code" id="couponInput">
-                                    <button class="btn btn-outline-secondary" type="button" id="applyCouponBtn">
-                                        Apply
-                                    </button>
-                                </div>
-                            </div>
+                            
                         </div>
                     </div>
                     
                     <!-- Payment Methods Info -->
                     <div class="card shadow-sm mt-3">
                         <div class="card-body text-center py-3">
-                            <small class="text-muted d-block mb-2">We accept</small>
+                            <small class="text-muted d-block mb-2">Chúng tôi chấp nhận</small>
                             <div>
                                 <i class="bi bi-credit-card fs-4 text-muted me-2"></i>
                                 <i class="bi bi-paypal fs-4 text-muted me-2"></i>
@@ -246,67 +241,112 @@ foreach ($cartItems as $productId => $item) {
 <!-- Cart Page JavaScript -->
 <script>
 /**
- * Cart Page - Quantity & Remove Item Handlers
- * Sử dụng event delegation để tránh duplicate listeners
+ * Cart Page - Quantity, Remove, and Clear Handlers
  */
 
-// ✅ Event Delegation: Dùng 1 listener cho toàn bộ document
 document.addEventListener('click', function(e) {
     const target = e.target;
-    
-    // ✅ Handle qty-plus button (hoặc icon bên trong)
-    const plusBtn = target.closest('.qty-plus');
-    if (plusBtn) {
+
+    const increaseBtn = target.closest('.btn-increase');
+    if (increaseBtn) {
         e.preventDefault();
-        const productId = plusBtn.getAttribute('data-product-id');
-        const input = document.querySelector(`.qty-value[data-product-id="${productId}"]`);
-        
+        const productId = increaseBtn.getAttribute('data-product-id');
+        const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
         if (input) {
+            const maxStock = parseInt(increaseBtn.getAttribute('data-max-stock')) || Infinity;
             let quantity = parseInt(input.value) || 1;
-            quantity++; // Tăng 1
-            input.value = quantity;
-            updateCartQuantity(productId, quantity);
-        }
-        return;
-    }
-    
-    // ✅ Handle qty-minus button
-    const minusBtn = target.closest('.qty-minus');
-    if (minusBtn) {
-        e.preventDefault();
-        const productId = minusBtn.getAttribute('data-product-id');
-        const input = document.querySelector(`.qty-value[data-product-id="${productId}"]`);
-        
-        if (input) {
-            let quantity = parseInt(input.value) || 1;
-            if (quantity > 1) {
-                quantity--; // Giảm 1
+            if (quantity < maxStock) {
+                quantity += 1;
                 input.value = quantity;
                 updateCartQuantity(productId, quantity);
             }
         }
         return;
     }
-    
-    // ✅ Handle remove button
-    const removeBtn = target.closest('.btn-remove-item');
+
+    const decreaseBtn = target.closest('.btn-decrease');
+    if (decreaseBtn) {
+        e.preventDefault();
+        const productId = decreaseBtn.getAttribute('data-product-id');
+        const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+        if (input) {
+            let quantity = parseInt(input.value) || 1;
+            if (quantity > 1) {
+                quantity -= 1;
+                input.value = quantity;
+                updateCartQuantity(productId, quantity);
+            }
+        }
+        return;
+    }
+
+    const removeBtn = target.closest('.btn-remove');
     if (removeBtn) {
         e.preventDefault();
         const productId = removeBtn.getAttribute('data-product-id');
-        if (confirm('Remove this product from cart?')) {
+        if (confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ?')) {
             removeCartItem(productId);
         }
         return;
     }
+
+    const clearBtn = target.closest('#clearCartBtn');
+    if (clearBtn) {
+        e.preventDefault();
+        if (confirm('Bạn có chắc muốn xóa tất cả sản phẩm trong giỏ?')) {
+            clearCart();
+        }
+    }
 });
 
-/**
- * Update cart quantity via AJAX
- */
+const couponInput = document.getElementById('couponInput');
+const applyCouponBtn = document.getElementById('applyCouponBtn');
+const couponMessage = document.getElementById('couponMessage');
+
+applyCouponBtn?.addEventListener('click', async function () {
+    const code = couponInput?.value.trim() || '';
+    if (!code) {
+        showCouponMessage('Vui lòng nhập mã giảm giá.', false);
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('action', 'apply_coupon');
+        formData.append('coupon_code', code);
+
+        const response = await fetch('ajax/cart_handler.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showCouponMessage(data.message || 'Mã giảm giá hợp lệ.', true);
+            // Reload to update totals with discount
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showCouponMessage(data.message || 'Mã giảm giá không tồn tại.', false);
+        }
+    } catch (error) {
+        console.error('Error applying coupon:', error);
+        showCouponMessage('Lỗi mạng. Vui lòng thử lại.', false);
+    }
+});
+
+function showCouponMessage(message, isSuccess) {
+    if (!couponMessage) return;
+    couponMessage.textContent = message;
+    couponMessage.style.display = 'block';
+    couponMessage.classList.toggle('text-success', isSuccess);
+    couponMessage.classList.toggle('text-danger', !isSuccess);
+}
+
 async function updateCartQuantity(productId, quantity) {
     const formData = new FormData();
     formData.append('action', 'update');
-    formData.append('productid', productId);
+    formData.append('product_id', productId);
     formData.append('quantity', quantity);
 
     try {
@@ -318,24 +358,20 @@ async function updateCartQuantity(productId, quantity) {
         const data = await response.json();
 
         if (data.success) {
-            // ✅ Reload page để update totals
             location.reload();
         } else {
-            alert('Failed to update cart: ' + (data.message || 'Unknown error'));
+            alert('Cập nhật giỏ hàng không thành công: ' + (data.message || 'Lỗi không xác định'));
         }
     } catch (error) {
         console.error('Error updating cart:', error);
-        alert('Network error. Please try again.');
+        alert('Lỗi mạng. Vui lòng thử lại.');
     }
 }
 
-/**
- * Remove cart item via AJAX
- */
 async function removeCartItem(productId) {
     const formData = new FormData();
     formData.append('action', 'remove');
-    formData.append('productid', productId);
+    formData.append('product_id', productId);
 
     try {
         const response = await fetch('ajax/cart_handler.php', {
@@ -348,11 +384,33 @@ async function removeCartItem(productId) {
         if (data.success) {
             location.reload();
         } else {
-            alert('Failed to remove item: ' + (data.message || 'Unknown error'));
+            alert('Xóa sản phẩm không thành công: ' + (data.message || 'Lỗi không xác định'));
         }
     } catch (error) {
         console.error('Error removing item:', error);
-        alert('Network error. Please try again.');
+        alert('Lỗi mạng. Vui lòng thử lại.');
+    }
+}
+
+async function clearCart() {
+    const formData = new FormData();
+    formData.append('action', 'clear');
+
+    try {
+        const response = await fetch('ajax/cart_handler.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Xóa giỏ hàng không thành công: ' + (data.message || 'Lỗi không xác định'));
+        }
+    } catch (error) {
+        console.error('Error clearing cart:', error);
+        alert('Lỗi mạng. Vui lòng thử lại.');
     }
 }
 </script>

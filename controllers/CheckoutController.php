@@ -43,6 +43,15 @@ class CheckoutController {
                 }
             }
 
+            // ✅ Yêu cầu đăng nhập để đặt hàng
+            if (!isset($_SESSION['user_id'])) {
+                return [
+                    'success' => false,
+                    'message' => 'Vui lòng đăng nhập để đặt hàng.',
+                    'code' => 'auth_required'
+                ];
+            }
+
             // ✅ Tính totals
             $subtotal = 0;
             $orderItems = [];
@@ -73,7 +82,12 @@ class CheckoutController {
 
             $shippingFee = ($subtotal >= 1500000) ? 0 : 30000;
             $tax = 0;
-            $total = $subtotal + $shippingFee + $tax;
+            $discountAmount = 0;
+            $appliedCoupon = $_SESSION['applied_coupon'] ?? null;
+            if ($appliedCoupon && isset($appliedCoupon['discount_percent'])) {
+                $discountAmount = $subtotal * (floatval($appliedCoupon['discount_percent']) / 100);
+            }
+            $total = $subtotal - $discountAmount + $shippingFee + $tax;
 
             // ✅ Tạo order data
             $orderData = [
@@ -88,7 +102,9 @@ class CheckoutController {
                 'subtotal' => $subtotal,
                 'shipping_fee' => $shippingFee,
                 'tax' => $tax,
+                'discount_amount' => $discountAmount,
                 'total' => $total,
+                'coupon_code' => $appliedCoupon['code'] ?? null,
                 'notes' => trim($_POST['notes'] ?? ''),
                 'items' => $orderItems
             ];
@@ -98,8 +114,9 @@ class CheckoutController {
             $orderId = $orderModel->createOrder($orderData);
 
             if ($orderId) {
-                // Clear session cart
+                // Clear session cart and coupon after successful order
                 $_SESSION['cart'] = [];
+                unset($_SESSION['applied_coupon']);
 
                 return [
                     'success' => true,
@@ -142,7 +159,15 @@ class CheckoutController {
 
         $shippingFee = ($subtotal >= 1500000) ? 0 : 30000;
         $tax = 0;
-        $total = $subtotal + $shippingFee + $tax;
+        $discountAmount = 0;
+        $couponCode = null;
+        $appliedCoupon = $_SESSION['applied_coupon'] ?? null;
+        if ($appliedCoupon && isset($appliedCoupon['discount_percent'])) {
+            $discountAmount = $subtotal * (floatval($appliedCoupon['discount_percent']) / 100);
+            $couponCode = $appliedCoupon['code'] ?? null;
+        }
+
+        $total = $subtotal - $discountAmount + $shippingFee + $tax;
 
         include 'views/client/checkout.php';
     }
