@@ -78,11 +78,11 @@ $finalTotal = $cartTotal - $discountAmount;
                                                     <div class="d-flex align-items-center">
                                                         <?php 
                                                             // Determine image URL
-                                                            $imgUrl = !empty($item['image']) ? htmlspecialchars($item['image']) : 'assets/img/placeholder.png';
+                                                            $imgUrl = !empty($item['image']) ? htmlspecialchars($item['image']) : 'assets/img/product_1.webp';
                                                             // Try to validate if image file exists
                                                             $imagePath = __DIR__ . '/../../' . ltrim($imgUrl, '/');
                                                             if (!file_exists($imagePath)) {
-                                                                $imgUrl = 'assets/img/placeholder.png';
+                                                                $imgUrl = 'assets/img/product_1.webp';
                                                             }
                                                         ?>
                                                         <img src="<?= htmlspecialchars($imgUrl) ?>" 
@@ -215,7 +215,6 @@ $finalTotal = $cartTotal - $discountAmount;
                                     <i class="bi bi-credit-card"></i> Tiến hành thanh toán
                                 </a>
                             </div>
-                            
                             
                         </div>
                     </div>
