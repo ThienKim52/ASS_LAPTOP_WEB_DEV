@@ -6,7 +6,7 @@ require_once 'config/db.php';
 
 // Chỉ cho admin
 if (
-    !isset($_SESSION['user_id']) ||
+    !isset($_SESSION['user_id'])
     // !isset($_SESSION['is_admin']) ||
     // (int)$_SESSION['is_admin'] !== 1
 ) {
@@ -186,8 +186,6 @@ $totalUsers = $userData['total'];
 
             <td><?= htmlspecialchars($u['fullname'] ?? '') ?></td>
             <td>
-              <?php ?>
-                <span class="badge bg-primary">Admin</span>
               <?php?>
                 <span class="badge bg-secondary">Customer</span>
             </td>
