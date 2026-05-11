@@ -127,7 +127,6 @@ class ShoppingCart {
             const data = await response.json();
             
             if (data.success) {
-<<<<<<< HEAD
                 // Update badge (only if elements exist)
                 if (this.cartBadge) this.cartBadge.textContent = data.itemCount;
                 if (this.cartItemCount) this.cartItemCount.textContent = `${data.itemCount} items`;
@@ -137,17 +136,6 @@ class ShoppingCart {
                 
                 // Render cart items (only if element exists)
                 if (this.cartDropdownBody) this.renderMiniCartItems(data.cart);
-=======
-                // Update badge
-                this.cartBadge.textContent = data.itemCount;
-                this.cartItemCount.textContent = `${data.itemCount} items`;
-                
-                // Update total
-                this.cartTotalAmount.textContent = `${this.formatNumber(data.total)}`;
-                
-                // Render cart items
-                this.renderMiniCartItems(data.cart);
->>>>>>> origin/article-feature
             }
         } catch (error) {
             console.error('Error updating cart:', error);

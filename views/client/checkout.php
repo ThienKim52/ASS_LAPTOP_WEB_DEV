@@ -151,32 +151,22 @@ $total          = $total ?? 0;
                 
                 <!-- Right Column - Order Summary -->
                 <div class="col-lg-5">
-                    <div class="card shadow-sm sticky-top" style="position: sticky; top: 100px; z-index: 500; max-height: calc(100vh - 120px); overflow-y: auto;">
-                        <div class="card-header bg-white">
-                            <h5 class="mb-0"><i class="bi bi-basket-fill"></i> Order Summary</h5>
+                    <div class="card shadow-sm checkout-summary-card">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="bi bi-basket-fill"></i> Tóm tắt đơn hàng</h5>
                         </div>
                         <div class="card-body">
                             
                             <!-- Cart Items -->
-                            <div class="order-items mb-3" style="max-height: 300px; overflow-y: auto;">
+                            <div class="order-items mb-3">
                                 <?php foreach ($cartItems as $item): ?>
                                     <?php
-                                    // ✅ Validation: Skip nếu thiếu thông tin quan trọng
                                     if (!isset($item['name']) || !isset($item['price']) || !isset($item['image']) || !isset($item['quantity'])) {
                                     error_log("Checkout.php - Skipping invalid item: " . print_r($item, true));
                                     continue;
                                     }
                                     ?>
                                     <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
-                                        <?php 
-                                            $imgUrl = (strpos($item['image'], 'http') === 0) 
-                                                ? $item['image'] 
-                                                : 'assets/img/' . $item['image']; 
-                                        ?>
-                                        <img src="<?= htmlspecialchars($imgUrl) ?>" 
-                                             alt="<?= htmlspecialchars($item['name']) ?>" 
-                                             style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;"
-                                             class="me-3">
                                         <div class="flex-grow-1">
                                             <h6 class="mb-1"><?= htmlspecialchars($item['name']) ?></h6>
                                             <small class="text-muted">
@@ -191,25 +181,32 @@ $total          = $total ?? 0;
                             <!-- Price Breakdown -->
                             <div class="price-breakdown">
                                 <div class="d-flex justify-content-between mb-2">
-                                    <span>Subtotal:</span>
+                                    <span>Tạm tính:</span>
                                     <strong id="checkoutSubtotal"><?= number_format($subtotal, 0, ',', '.') ?>đ</strong>
                                 </div>
                                 
                                 <div class="d-flex justify-content-between mb-2">
-                                    <span>Shipping Fee:</span>
+                                    <span>Phí vận chuyển:</span>
                                     <span id="checkoutShipping" class="<?= $shippingFee == 0 ? 'text-success' : '' ?>">
-                                        <?= $shippingFee == 0 ? 'Free' : number_format($shippingFee, 0, ',', '.') . 'đ' ?>
+                                        <?= $shippingFee == 0 ? 'Miễn phí' : number_format($shippingFee, 0, ',', '.') . 'đ' ?>
                                     </span>
                                 </div>
                                 
+                                <?php if (!empty($discountAmount) && $discountAmount > 0): ?>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Giảm giá mã <?= htmlspecialchars($couponCode ?? '') ?> (<?= number_format($appliedCoupon['discount_percent'] ?? 0, 0) ?>%):</span>
+                                    <span class="text-success">-<?= number_format($discountAmount, 0, ',', '.') ?>đ</span>
+                                </div>
+                                <?php endif; ?>
+                                
                                 <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
-                                    <span>Tax (0%):</span>
+                                    <span>Thuế (0%):</span>
                                     <span>0đ</span>
                                 </div>
                                 
                                 <div class="d-flex justify-content-between mb-4">
-                                    <h5 class="mb-0">Total:</h5>
-                                    <h5 class="text-primary mb-0" id="checkoutTotal">
+                                    <h5 class="mb-0">Tổng cộng:</h5>
+                                    <h5 class="text-danger mb-0" id="checkoutTotal">
                                         <?= number_format($total, 0, ',', '.') ?>đ
                                     </h5>
                                 </div>
@@ -217,19 +214,19 @@ $total          = $total ?? 0;
                             
                             <!-- Place Order Button -->
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary btn-lg" id="placeOrderBtn">
-                                    <i class="bi bi-check-circle"></i> Place Order
+                                <button type="submit" class="btn btn-danger btn-lg" id="placeOrderBtn">
+                                    <i class="bi bi-check-circle"></i> Đặt hàng
                                 </button>
-                                <a href="?page=cart" class="btn btn-outline-secondary">
-                                    <i class="bi bi-arrow-left"></i> Back to Cart
+                                <a href="?page=cart" class="btn btn-outline-danger">
+                                    <i class="bi bi-arrow-left"></i> Quay lại giỏ hàng
                                 </a>
                             </div>
                             
                             <!-- Security Notice -->
-                            <div class="alert alert-info mt-3 mb-0" role="alert">
+                            <div class="alert alert-danger mt-3 mb-0" role="alert">
                                 <small>
                                     <i class="bi bi-shield-check"></i> 
-                                    Your information is secure and encrypted
+                                    Thông tin của bạn được bảo mật.
                                 </small>
                             </div>
                             
@@ -254,7 +251,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async functio
     
     // Disable button
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';
     
     // Get form data
     const formData = new FormData(form);
@@ -270,18 +267,22 @@ document.getElementById('checkoutForm').addEventListener('submit', async functio
         
         if (data.success) {
             // Show success message
-            alert('✓ Order placed successfully!\nOrder ID: ' + data.order_id);
+            alert('✓ Đặt hàng thành công!\nMã đơn hàng: ' + data.order_id);
             
             // Redirect to order confirmation or home
             window.location.href = '?page=order_success&id=' + data.order_id;
         } else {
-            alert('✗ Error: ' + data.message);
+            alert('✗ Lỗi: ' + data.message);
+            if (data.code === 'auth_required') {
+                window.location.href = 'index.php?page=login_signup';
+                return;
+            }
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('✗ Network error. Please try again.');
+        alert('✗ Lỗi kết nối. Vui lòng thử lại.');
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
     }
