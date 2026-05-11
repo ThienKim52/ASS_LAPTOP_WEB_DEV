@@ -5,6 +5,19 @@ require_once __DIR__ . '/BaseModel.php';
 
 class PostModel extends BaseModel {
 
+    public function __construct() {
+        parent::__construct();
+        $this->ensureViewCountColumn();
+    }
+
+    private function ensureViewCountColumn() {
+        try {
+            $this->db->exec("ALTER TABLE articles ADD COLUMN IF NOT EXISTS view_count INT DEFAULT 0");
+        } catch (PDOException $e) {
+            // Silently fail if column already exists
+        }
+    }
+
     /**
      * Get all published articles with pagination and search.
      */
