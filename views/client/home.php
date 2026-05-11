@@ -58,7 +58,7 @@ $featuredSidebarLink = getSetting('home.featured_sidebar_link', 'index.php?page=
 
 $banner1Img = getSetting('home.banner_1_image', 'assets/img/banner-1.JPG');
 $banner2Img = getSetting('home.banner_2_image', 'assets/img/banner-2.jpg');
-
+$banner3Img = getSetting('home.banner_3_image', 'assets/img/banner-3.JPG');
 $featuredTitle = 'Laptop nổi bật';
 ?>
 
@@ -300,7 +300,7 @@ $featuredTitle = 'Laptop nổi bật';
     $featuredStickers = [
         ['src' => $banner1Img, 'link' => 'index.php?page=shop', 'alt' => 'Banner 1'],
         ['src' => $banner2Img, 'link' => 'index.php?page=shop', 'alt' => 'Banner 2'],
-        ['src' => $promoStripImg, 'link' => $promoStripLink, 'alt' => 'Dải banner ngang'],
+        ['src' => $banner3Img, 'link' => 'index.php?page=shop', 'alt' => 'Banner 3'],
         ['src' => $featuredSidebarImg, 'link' => $featuredSidebarLink, 'alt' => 'Banner nổi bật']
     ];
     ?>
