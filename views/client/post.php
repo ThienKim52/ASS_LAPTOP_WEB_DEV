@@ -14,12 +14,12 @@ require_once 'helpers/settings_helper.php';
     <link rel="stylesheet" href="assets/css/style.css">
     <style>
         :root {
-            --primary-color: #0d6efd;
+            --primary-color: #d70018;
             --text-muted: #6c757d;
         }
         body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; }
         .article-hero {
-            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            background: linear-gradient(135deg, #d70018 0%, #d70018 100%);
             color: white;
             padding: 60px 0;
             margin-bottom: 40px;
