@@ -31,8 +31,12 @@ $currentPage = $_GET['page'] ?? 'admin_dashboard';
                     <li class="<?= $currentPage === 'manage_reviews' ? 'active' : '' ?>">
                         <a href="?page=manage_reviews"><i class="ti-star"></i><span>Đánh giá</span></a>
                     </li>
-                    <li class="<?= $currentPage === 'manage_posts' ? 'active' : '' ?>">
-                        <a href="?page=manage_posts"><i class="ti-write"></i><span>Bài viết</span></a>
+                    <li class="<?= in_array($currentPage, ['manage_posts', 'manage_article_comments']) ? 'active' : '' ?>">
+                        <a href="javascript:void(0)"><i class="ti-write"></i><span>Tin tức & Bình luận</span></a>
+                        <ul class="collapse <?= in_array($currentPage, ['manage_posts', 'manage_article_comments']) ? 'in' : '' ?>">
+                            <li class="<?= $currentPage === 'manage_posts' ? 'active' : '' ?>"><a href="?page=manage_posts">Quản lý tin tức</a></li>
+                            <li class="<?= $currentPage === 'manage_article_comments' ? 'active' : '' ?>"><a href="?page=manage_article_comments">Duyệt bình luận</a></li>
+                        </ul>
                     </li>
                     <li class="<?= $currentPage === 'manage_qna' ? 'active' : '' ?>">
                         <a href="?page=manage_qna"><i class="ti-help-alt"></i><span>Hỏi & Đáp</span></a>
